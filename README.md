@@ -550,175 +550,301 @@ Verifique:
 
 ---
 
-## Parte 6: Exercícios Práticos
+## Parte 6: Entregáveis da Atividade
 
-### Exercício 1: Análise Adicional - Sazonalidade
+### 6.1 O que deve ser entregue
 
-**Objetivo**: Identificar padrões de vendas por dia da semana
+Para comprovar a conclusão desta atividade prática, você deverá entregar **evidências documentadas** de que completou todos os passos do roteiro. A entrega deve ser feita através de um **relatório em formato Markdown** (arquivo `ENTREGA.md`) no seu repositório GitHub.
 
-**Tarefas**:
-1. Extrair o dia da semana da coluna `date`
-2. Agrupar vendas por dia da semana
-3. Calcular receita média por dia
-4. Identificar o dia mais lucrativo
+### 6.2 Estrutura do Relatório de Entrega
 
-**Dica**: Use `dayofweek()` do PySpark
+Crie um arquivo chamado `ENTREGA.md` na raiz do seu repositório com a seguinte estrutura:
 
-### Exercício 2: Análise de Clientes VIP
+```markdown
+# Relatório de Entrega - Atividade Prática PySpark
 
-**Objetivo**: Identificar os top 20 clientes que mais gastaram
-
-**Tarefas**:
-1. Calcular total gasto por cliente
-2. Ordenar por valor total
-3. Selecionar top 20
-4. Calcular ticket médio destes clientes
-
-### Exercício 3: Análise de Categorias em Declínio
-
-**Objetivo**: Identificar categorias com queda nas vendas
-
-**Tarefas**:
-1. Agrupar vendas por categoria e mês
-2. Calcular variação percentual mês a mês
-3. Identificar categorias com variação negativa
-4. Gerar relatório de alerta
-
-### Exercício 4: Recomendação Simples
-
-**Objetivo**: Produtos frequentemente comprados juntos
-
-**Tarefas**:
-1. Agrupar compras por `customer_id` e `date`
-2. Identificar produtos comprados na mesma transação
-3. Contar co-ocorrências
-4. Gerar top 10 pares de produtos
-
-### Exercício 5: Análise de Performance
-
-**Objetivo**: Comparar performance com diferentes configurações
-
-**Tarefas**:
-1. Execute a análise com 1, 2 e 4 cores
-2. Meça o tempo de execução
-3. Compare uso de memória
-4. Documente os resultados
-
-**Comandos**:
-```bash
-# 1 core
-spark-submit --master local[1] spark_sales_analysis.py
-
-# 2 cores
-spark-submit --master local[2] spark_sales_analysis.py
-
-# 4 cores
-spark-submit --master local[4] spark_sales_analysis.py
-```
-
-### ✅ Checkpoint 6.1
-
-Após completar os exercícios:
-
-- [ ] Você implementou pelo menos 3 exercícios?
-- [ ] Os resultados são consistentes?
-- [ ] Você documentou suas descobertas?
-- [ ] Você compreende o impacto das configurações?
+**Nome do Aluno**: [Seu Nome Completo]  
+**RA**: [Seu Registro Acadêmico]  
+**Data de Entrega**: [DD/MM/AAAA]  
+**Link do Repositório**: [URL do seu fork no GitHub]
 
 ---
 
-## Parte 7: Comparação MapReduce vs Spark
+## Parte 1: Fundamentos do Apache Spark
 
-### 7.1 Exercício Comparativo
+### Evidências de Conclusão
+- [x] Li e compreendi a arquitetura do Spark
+- [x] Entendi os conceitos de RDD e DataFrame
+- [x] Compreendi a diferença entre Transformações e Ações
+- [x] Entendi o conceito de Lazy Evaluation
 
-**Objetivo**: Comparar a mesma análise (Word Count) em ambos frameworks
-
-**Passos**:
-
-1. Execute o Word Count com MapReduce (roteiro anterior)
-2. Execute o Word Count com Spark (roteiro atual)
-3. Compare:
-   - Linhas de código
-   - Tempo de execução
-   - Facilidade de implementação
-   - Legibilidade do código
-
-### 7.2 Tabela Comparativa
-
-Preencha a tabela:
-
-| Métrica | MapReduce | Spark | Observações |
-|---------|-----------|-------|-------------|
-| Linhas de código | | | |
-| Tempo execução (pequeno dataset) | | | |
-| Tempo execução (grande dataset) | | | |
-| Facilidade (1-5) | | | |
-| Legibilidade (1-5) | | | |
-| Memória utilizada | | | |
-
-### ✅ Checkpoint 7.1
-
-- [ ] Você executou ambas as implementações?
-- [ ] Você preencheu a tabela comparativa?
-- [ ] Você compreende quando usar cada framework?
+### Reflexão
+[Escreva um parágrafo explicando com suas palavras a diferença entre RDD e DataFrame e por que o Spark é mais rápido que MapReduce]
 
 ---
 
-## Parte 8: Publicação e Documentação
+## Parte 2: Caso de Uso - Análise de Vendas
 
-### 8.1 Versionamento no GitHub
+### Evidências de Conclusão
+- [x] Compreendi o contexto do problema de negócio
+- [x] Analisei a estrutura dos dados de vendas
+- [x] Identifiquei as análises a serem realizadas
 
-```bash
-# Configure seu git (se necessário)
-git config --global user.name "Seu Nome"
-git config --global user.email "seu@email.com"
-
-# Adicione todos os arquivos
-git add .
-
-# Commit das alterações
-git commit -m "feat: Implementa análise de vendas com PySpark"
-
-# Push para o GitHub
-git push origin main
-```
-
-### 8.2 Publicando Imagem no Docker Hub
-
-```bash
-# Login no Docker Hub
-docker login
-
-# Tag da imagem
-docker tag pyspark-app:v1.0 seu-usuario/pyspark-app:v1.0
-
-# Push da imagem
-docker push seu-usuario/pyspark-app:v1.0
-```
-
-### 8.3 Criando Documentação
-
-Crie um arquivo `RESULTADOS.md` documentando:
-
-1. **Introdução**: Breve descrição do projeto
-2. **Configuração**: Passos para reproduzir
-3. **Resultados**: Principais descobertas das análises
-4. **Gráficos**: Visualizações (se aplicável)
-5. **Conclusões**: Insights de negócio
-6. **Aprendizados**: Lições sobre Spark
-
-### ✅ Checkpoint 8.1
-
-- [ ] Código foi commitado no GitHub?
-- [ ] Imagem foi publicada no Docker Hub?
-- [ ] Documentação foi criada?
-- [ ] README está completo e claro?
+### Perguntas de Negócio
+[Liste 3 perguntas de negócio que poderiam ser respondidas com este dataset além das propostas no roteiro]
 
 ---
 
-## Parte 9: Recursos Adicionais e Próximos Passos
+## Parte 3: Configuração do Ambiente
 
-### 9.1 Conceitos Avançados para Estudo
+### Screenshot 1: Fork do Repositório
+[Insira aqui um screenshot mostrando seu fork do repositório no GitHub]
+
+![Fork do Repositório](./evidencias/screenshot_fork.png)
+
+### Screenshot 2: Codespaces em Execução
+[Insira aqui um screenshot do GitHub Codespaces aberto com os arquivos do projeto]
+
+![Codespaces](./evidencias/screenshot_codespaces.png)
+
+### Screenshot 3: Estrutura do Projeto
+[Insira aqui um screenshot do terminal mostrando a estrutura de arquivos com `ls -la pyspark_app/`]
+
+![Estrutura](./evidencias/screenshot_estrutura.png)
+
+---
+
+## Parte 4: Implementação com PySpark
+
+### Screenshot 4: Geração de Dados
+[Screenshot da execução do `data_generator.py` mostrando a criação dos arquivos CSV]
+
+![Geração de Dados](./evidencias/screenshot_data_generator.png)
+
+### Screenshot 5: Execução do Word Count
+[Screenshot da execução completa do `spark_word_count.py` mostrando os resultados]
+
+![Word Count](./evidencias/screenshot_wordcount.png)
+
+### Screenshot 6: Análise de Vendas - Schema
+[Screenshot mostrando o schema do DataFrame de vendas]
+
+![Schema](./evidencias/screenshot_schema.png)
+
+### Screenshot 7: Análise de Vendas - Receita por Categoria
+[Screenshot mostrando os resultados da análise de receita por categoria]
+
+![Receita por Categoria](./evidencias/screenshot_receita_categoria.png)
+
+### Screenshot 8: Análise de Vendas - Top 10 Produtos
+[Screenshot mostrando os 10 produtos mais vendidos]
+
+![Top Produtos](./evidencias/screenshot_top_produtos.png)
+
+### Screenshot 9: Análise de Vendas - Vendas por Região
+[Screenshot mostrando a distribuição de vendas por região]
+
+![Vendas por Região](./evidencias/screenshot_vendas_regiao.png)
+
+### Principais Descobertas
+[Escreva um parágrafo descrevendo os principais insights obtidos da análise de vendas. Qual categoria gera mais receita? Qual região vende mais? Quais produtos são mais populares?]
+
+---
+
+## Parte 5: Containerização com Docker
+
+### Screenshot 10: Docker Build
+[Screenshot mostrando o build da imagem Docker com sucesso]
+
+![Docker Build](./evidencias/screenshot_docker_build.png)
+
+### Screenshot 11: Docker Images
+[Screenshot do comando `docker images` mostrando a imagem `pyspark-app:v1.0` criada]
+
+![Docker Images](./evidencias/screenshot_docker_images.png)
+
+### Screenshot 12: Execução no Container
+[Screenshot mostrando a análise de vendas executando dentro do container Docker]
+
+![Execução Container](./evidencias/screenshot_docker_run.png)
+
+### Screenshot 13: Docker Compose
+[Screenshot mostrando a execução com `docker-compose up`]
+
+![Docker Compose](./evidencias/screenshot_docker_compose.png)
+
+---
+
+## Checklist Final de Conclusão
+
+### Código
+- [x] Todos os scripts executam sem erros
+- [x] Código está legível e compreensível
+- [x] Dados foram gerados corretamente
+- [x] Análises produziram resultados coerentes
+
+### Docker
+- [x] Imagem Docker foi construída com sucesso
+- [x] Container executa corretamente
+- [x] Análises funcionam dentro do container
+- [x] Docker Compose está funcional
+
+### Documentação
+- [x] Compreendi todos os conceitos apresentados
+- [x] Completei todos os checkpoints do roteiro
+- [x] Documentei minhas descobertas neste relatório
+- [x] Organizei os screenshots em pasta `evidencias/`
+
+### Repositório GitHub
+- [x] Repositório está público ou compartilhado com o professor
+- [x] Todos os arquivos necessários estão presentes
+- [x] README.md original está preservado
+- [x] ENTREGA.md foi criado com todas as evidências
+
+---
+
+## Aprendizados e Reflexões
+
+### O que aprendi com esta atividade?
+[Escreva um parágrafo sobre os principais aprendizados desta atividade prática]
+
+### Dificuldades encontradas
+[Descreva as principais dificuldades que encontrou e como as superou]
+
+### Aplicações práticas
+[Descreva ao menos 2 cenários do mundo real onde você poderia aplicar PySpark]
+
+---
+
+## Informações de Entrega
+
+**Data de Conclusão**: [DD/MM/AAAA]  
+**Link do Repositório GitHub**: [URL completa]  
+**Commit SHA da Entrega**: [SHA do último commit]
+
+---
+
+**Declaração de Autenticidade**
+
+Declaro que este trabalho foi realizado por mim e que todas as evidências apresentadas são autênticas e correspondem à minha execução da atividade prática.
+
+[Seu Nome]  
+[Data]
+```
+
+### 6.3 Orientações para os Screenshots
+
+**Requisitos para os screenshots:**
+
+1. **Qualidade**: Screenshots devem estar legíveis e em resolução adequada
+2. **Conteúdo completo**: Capture toda a saída relevante do comando/execução
+3. **Organização**: Crie uma pasta `evidencias/` no repositório para armazenar as imagens
+4. **Nomenclatura**: Use nomes descritivos (ex: `screenshot_docker_build.png`)
+5. **Formato**: PNG ou JPG
+6. **Timestamp visível**: Se possível, inclua data/hora nas capturas
+
+**Como capturar screenshots no Codespaces:**
+- Windows: `Windows + Shift + S`
+- Mac: `Cmd + Shift + 4`
+- Linux: `Print Screen` ou `Gnome Screenshot`
+
+### 6.4 Estrutura de Pastas Esperada
+
+Após completar a atividade, seu repositório deve ter:
+
+```
+seu-repositorio/
+├── README.md                    # Roteiro original (não modificar)
+├── ENTREGA.md                   # Seu relatório de entrega
+├── evidencias/                  # Pasta com screenshots
+│   ├── screenshot_fork.png
+│   ├── screenshot_codespaces.png
+│   ├── screenshot_docker_build.png
+│   └── ... (outros screenshots)
+├── pyspark_app/
+│   ├── spark_sales_analysis.py
+│   ├── spark_word_count.py
+│   ├── data_generator.py
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── requirements.txt
+│   └── data/
+│       ├── sales_data.csv
+│       ├── products.csv
+│       └── input.txt
+└── ... (outros arquivos)
+```
+
+### 6.5 Critérios de Avaliação
+
+Sua entrega será avaliada com base nos seguintes critérios:
+
+| Critério | Peso | Descrição |
+|----------|------|-----------|
+| **Completude das Evidências** | 40% | Todos os screenshots obrigatórios estão presentes e legíveis |
+| **Execução Correta** | 30% | As evidências mostram execuções bem-sucedidas de todos os componentes |
+| **Documentação e Reflexão** | 20% | Respostas reflexivas demonstram compreensão dos conceitos |
+| **Organização** | 10% | Repositório bem organizado, screenshots nomeados corretamente |
+
+**Pontuação detalhada:**
+
+- **Parte 1 a 5 completas com evidências**: até 40 pontos
+- **Todas as execuções funcionando corretamente**: até 30 pontos
+- **Reflexões e análises coerentes**: até 20 pontos
+- **Repositório organizado e profissional**: até 10 pontos
+
+**Total**: 100 pontos
+
+### 6.6 Formato e Prazo de Entrega
+
+**Como entregar:**
+1. Certifique-se de que seu repositório está **público** ou compartilhado com o professor
+2. Complete o arquivo `ENTREGA.md` com todas as evidências
+3. Commit e push de todas as alterações
+4. Submeta o **link do repositório** através da plataforma indicada pelo professor
+
+**Prazo**: [A ser definido pelo professor]
+
+**Atenção**: Entregas sem o arquivo `ENTREGA.md` ou sem screenshots não serão aceitas.
+
+### 6.7 Checklist Pré-Entrega
+
+Antes de submeter, verifique:
+
+- [ ] Arquivo `ENTREGA.md` criado na raiz do repositório
+- [ ] Todos os 13 screenshots obrigatórios estão presentes
+- [ ] Pasta `evidencias/` foi criada e contém todas as imagens
+- [ ] Screenshots estão legíveis e mostram informações completas
+- [ ] Seções de reflexão foram preenchidas com suas palavras
+- [ ] Checklist final está marcado corretamente
+- [ ] Informações pessoais (nome, RA) estão corretas
+- [ ] Link do repositório está funcional
+- [ ] Repositório está público ou compartilhado com o professor
+- [ ] Todos os arquivos do projeto estão no repositório
+- [ ] Testei que as análises executam corretamente
+
+### 6.8 Dúvidas Frequentes
+
+**P: Preciso publicar a imagem no Docker Hub?**  
+R: Não é obrigatório para esta entrega. Basta ter evidências de que construiu e executou localmente.
+
+**P: Posso usar print/export do terminal ao invés de screenshots?**  
+R: Não. Screenshots são obrigatórios pois mostram o contexto completo de execução.
+
+**P: O que fazer se meu Codespaces expirar?**  
+R: Você pode recriar o Codespace do seu fork. Os arquivos estarão lá se você fez commit.
+
+**P: Posso trabalhar localmente ao invés de usar Codespaces?**  
+R: Sim, desde que consiga executar todas as partes e gerar as evidências.
+
+**P: Tenho que preencher todos os campos do template?**  
+R: Sim. Campos vazios ou incompletos resultarão em desconto na nota.
+
+---
+
+## Parte 7: Recursos Adicionais e Próximos Passos
+
+### 7.1 Conceitos Avançados para Estudo
 
 1. **Spark SQL**: Queries SQL em DataFrames
 2. **Spark Streaming**: Processamento de dados em tempo real
@@ -726,7 +852,7 @@ Crie um arquivo `RESULTADOS.md` documentando:
 4. **GraphX**: Processamento de grafos
 5. **Delta Lake**: ACID transactions em Data Lakes
 
-### 9.2 Recursos de Aprendizagem
+### 7.2 Recursos de Aprendizagem
 
 **Documentação Oficial**:
 - [Apache Spark Documentation](https://spark.apache.org/docs/latest/)
@@ -744,7 +870,7 @@ Crie um arquivo `RESULTADOS.md` documentando:
 - [Stack Overflow - Apache Spark](https://stackoverflow.com/questions/tagged/apache-spark)
 - [Spark User Mailing List](https://spark.apache.org/community.html)
 
-### 9.3 Próximos Passos
+### 7.3 Próximos Passos
 
 1. **Deploy em Cluster**: Configure Spark em modo cluster (Standalone/YARN)
 2. **Integração com Cloud**: Use AWS EMR, Azure Databricks ou GCP Dataproc
@@ -752,16 +878,16 @@ Crie um arquivo `RESULTADOS.md` documentando:
 4. **Machine Learning**: Crie modelos preditivos com MLlib
 5. **Otimização**: Aprenda técnicas de tuning e particionamento
 
-### 9.4 Certificações
+### 7.4 Certificações
 
 - **Databricks Certified Associate Developer for Apache Spark**
 - **Cloudera Certified Spark and Hadoop Developer**
 
 ---
 
-## Parte 10: Avaliação e Entrega
+## Parte 8: Checklist Final e Avaliação
 
-### 10.1 Checklist Final
+### 8.1 Checklist de Conclusão
 
 Antes de entregar, verifique:
 
@@ -794,22 +920,9 @@ Antes de entregar, verifique:
 - [ ] Resultados foram documentados
 - [ ] Análise comparativa foi realizada
 
-### 10.2 Critérios de Avaliação
+### 8.2 Orientações para a Entrega
 
-| Critério | Peso | Descrição |
-|----------|------|-----------|
-| Implementação PySpark | 30% | Correção e qualidade do código |
-| Containerização | 20% | Docker configurado corretamente |
-| Análises | 25% | Qualidade e profundidade das análises |
-| Documentação | 15% | Clareza e completude |
-| Exercícios | 10% | Exercícios adicionais completados |
-
-### 10.3 Formato de Entrega
-
-1. **Link do repositório GitHub**: URL do seu fork
-2. **Link da imagem Docker Hub**: URL da imagem publicada
-3. **Documento RESULTADOS.md**: Com análises e conclusões
-4. **Screenshots**: Evidências de execução (opcional)
+Para instruções detalhadas sobre os entregáveis, consulte a **Parte 6: Entregáveis da Atividade**.
 
 ---
 

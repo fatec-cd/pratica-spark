@@ -18,14 +18,19 @@ Este repositório contém um roteiro prático completo para aprendizado de **Apa
 ```
 PySparkContainer/
 ├── README.md                          # Roteiro principal (teoria + prática)
+├── ENTREGA_TEMPLATE.md               # Template para relatório do aluno
+├── ORIENTACOES_PROFESSOR.md          # Guia de correção para o professor
 ├── COMPARACAO_MAPREDUCE_SPARK.md     # Análise comparativa detalhada
 ├── EXERCICIOS_EXTRAS.md              # 10 exercícios adicionais
+├── PROJETO_OVERVIEW.md               # Este arquivo (visão geral)
 ├── LICENSE                           # Licença MIT
 ├── init-repo.sh                      # Script de setup (Linux/Mac)
 ├── init-repo.ps1                     # Script de setup (Windows)
 ├── .gitignore                        # Arquivos ignorados pelo Git
 ├── .devcontainer/                    # Configuração GitHub Codespaces
 │   └── devcontainer.json
+├── evidencias/                       # Pasta para screenshots dos alunos
+│   └── README.md                     # Instruções sobre evidências
 └── pyspark_app/                      # Aplicação PySpark
     ├── README.md                     # Documentação da aplicação
     ├── requirements.txt              # Dependências Python
@@ -116,16 +121,36 @@ docker-compose up sales-analysis
 - Instalação de dependências
 - Configuração do Spark
 
-### Parte 4-8: Implementação Prática
+### Parte 4: Implementação com PySpark
 - Scripts Python comentados
-- Containerização com Docker
-- Exercícios hands-on
-- Publicação no GitHub
+- Geração de dados
+- Análise de vendas completa
+- Métricas e resultados
 
-### Parte 9-10: Recursos e Avaliação
+### Parte 5: Containerização com Docker
+- Dockerfile otimizado
+- Docker Compose
+- Execução em container
+- Volumes e persistência
+
+### Parte 6: Entregáveis da Atividade
+- Template de relatório (ENTREGA.md)
+- 13 screenshots obrigatórios
+- Critérios de avaliação
+- Checklist de conclusão
+- Orientações de entrega
+
+### Parte 7: Recursos Adicionais
+- Conceitos avançados para estudo
 - Links para documentação
 - Próximos passos
-- Critérios de avaliação
+- Certificações
+
+### Parte 8: Checklist Final
+- Verificação de código
+- Verificação de Docker
+- Verificação de documentação
+- Orientações para entrega
 
 ## 🎓 Caso de Uso: Análise de Vendas
 

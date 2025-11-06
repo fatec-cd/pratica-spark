@@ -49,3 +49,6 @@ pyspark_app/data/output/
 # OS
 .DS_Store
 Thumbs.db
+
+# Evidencias (permitir screenshots dos alunos)
+# evidencias/ - NÃO IGNORAR esta pasta, alunos devem commitar screenshots aqui
