@@ -1,12 +1,29 @@
-# Imagem base com Spark e Python
-FROM apache/spark-py:v3.5.0
+# Imagem base leve com Python; Spark será fornecido via pacote PySpark em requirements.txt
+FROM python:3.11-slim
 
 # Metadata
 LABEL maintainer="estudante@cienciadados.edu"
 LABEL description="PySpark Application for Big Data Analytics"
 
-# Define usuário root temporariamente para instalações
-USER root
+# Evita prompts interativos durante a instalação
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instala Java 17 necessário pelo PySpark
+# Debian Bookworm usa temurin ou default-jdk para Java 17
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        default-jdk-headless \
+        procps \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configura JAVA_HOME (detecta automaticamente a versão instalada)
+RUN JAVA_HOME_PATH=$(dirname $(dirname $(readlink -f $(which java)))) && \
+    echo "export JAVA_HOME=$JAVA_HOME_PATH" >> /etc/profile && \
+    echo "JAVA_HOME detectado: $JAVA_HOME_PATH"
+
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # Define diretório de trabalho
 WORKDIR /app
@@ -14,33 +31,23 @@ WORKDIR /app
 # Copia requirements
 COPY requirements.txt .
 
-# Instala dependências Python adicionais
+# Instala dependências Python (inclui pyspark)
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Cria diretórios necessários com permissões adequadas
-RUN mkdir -p /app/data /app/data/output && \
-    chmod -R 777 /app/data && \
-    chown -R spark:spark /app
+RUN useradd -ms /bin/bash spark && \
+    mkdir -p /app/data /app/data/output && \
+    chown -R spark:spark /app && \
+    chmod -R 777 /app/data
 
 # Copia scripts Python
 COPY *.py ./
 
 # Torna scripts executáveis e ajusta proprietário
-RUN chmod +x *.py && \
-    chown -R spark:spark /app
+RUN chmod +x *.py && chown -R spark:spark /app
 
-# Volta para usuário spark (não-root) - mais seguro que root
+# Executa como usuário não-root por segurança
 USER spark
-
-# Garante que o usuário spark pode escrever nos diretórios necessários
-USER root
-RUN chmod -R 777 /app/data /tmp
-USER spark
-
-# Configura variáveis de ambiente
-ENV SPARK_HOME=/opt/spark
-ENV PATH=$SPARK_HOME/bin:$PATH
-ENV PYTHONPATH=$SPARK_HOME/python:$PYTHONPATH
 
 # Define comando padrão
 CMD ["python3", "spark_sales_analysis.py"]

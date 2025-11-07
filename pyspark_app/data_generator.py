@@ -175,26 +175,26 @@ def generate_text_data():
     """Gera arquivo de texto para exemplo de word count"""
     text_file = "data/input.txt"
     
-    text_content = """Apache Spark is a unified analytics engine for large-scale data processing.
-Spark provides high-level APIs in Java, Scala, Python and R.
-PySpark is the Python API for Apache Spark.
-Big Data processing has become essential in modern data science.
-Data engineers use Spark to build robust data pipelines.
-Machine Learning at scale is possible with Spark MLlib.
-Real-time stream processing can be done with Spark Streaming.
-Spark SQL provides a DataFrame API for structured data processing.
-The Catalyst optimizer makes Spark SQL queries fast and efficient.
-Spark runs on Hadoop, Apache Mesos, Kubernetes, standalone, or in the cloud.
-Data scientists love PySpark for its simplicity and power.
-Distributed computing enables processing of massive datasets.
-Apache Spark revolutionized big data analytics.
-In-memory computation makes Spark incredibly fast.
-RDDs are the fundamental data structure in Spark.
-DataFrames provide a higher-level abstraction than RDDs.
-Lazy evaluation allows Spark to optimize the execution plan.
-Transformations and actions are key concepts in Spark programming.
-Spark applications can be written in multiple programming languages.
-The Spark ecosystem includes MLlib, GraphX, and Spark Streaming."""
+    text_content = """O Apache Spark é um mecanismo unificado de análise para processamento de dados em larga escala.
+O Spark fornece APIs de alto nível em Java, Scala, Python e R.
+O PySpark é a API Python do Apache Spark.
+O processamento de Big Data tornou-se essencial na ciência de dados moderna.
+Engenheiros de dados usam o Spark para construir pipelines de dados robustos.
+Aprendizado de Máquina em escala é possível com o Spark MLlib.
+O processamento de fluxos em tempo real pode ser feito com o Spark Streaming.
+O Spark SQL fornece uma API de DataFrame para processamento de dados estruturados.
+O otimizador Catalyst torna as consultas do Spark SQL rápidas e eficientes.
+O Spark roda no Hadoop, Apache Mesos, Kubernetes, de forma standalone ou na nuvem.
+Cientistas de dados adoram o PySpark por sua simplicidade e poder.
+A computação distribuída possibilita o processamento de conjuntos de dados massivos.
+O Apache Spark revolucionou a análise de big data.
+A computação em memória torna o Spark incrivelmente rápido.
+Os RDDs são a estrutura de dados fundamental no Spark.
+Os DataFrames fornecem uma abstração de nível mais alto do que os RDDs.
+A avaliação preguiçosa (lazy evaluation) permite que o Spark otimize o plano de execução.
+Transformações e ações são conceitos-chave na programação com Spark.
+Aplicações em Spark podem ser escritas em várias linguagens de programação.
+O ecossistema do Spark inclui MLlib, GraphX e Spark Streaming."""
     
     with open(text_file, 'w', encoding='utf-8') as f:
         f.write(text_content)

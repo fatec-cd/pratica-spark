@@ -294,15 +294,4 @@ python3 data_generator.py
 4. **Delta Lake**: ACID transactions
 5. **Cloud Deployment**: AWS EMR, Azure Databricks, GCP Dataproc
 
-## 📝 Licença
 
-MIT License - Livre para uso educacional e comercial.
-
----
-
-**Desenvolvido para o curso de Ciência de Dados**  
-**Versão 1.0 - Novembro 2025**
-
-**Instrutor**: Professor/Instrutor  
-**Instituição**: FATEC - Faculdade de Tecnologia  
-**Disciplina**: Infraestrutura para Ciência de Dados

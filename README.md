@@ -59,35 +59,35 @@ Apache Spark é um framework de processamento de dados distribuído de código a
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      SPARK APPLICATION                       │
-│                                                              │
+│                      SPARK APPLICATION                      │
+│                                                             │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │              DRIVER PROGRAM                           │   │
+│  │              DRIVER PROGRAM                          │   │
 │  │  • SparkContext/SparkSession                         │   │
 │  │  • Converte programa em tarefas                      │   │
 │  │  • Agenda tarefas nos executors                      │   │
 │  │  • Monitora execução                                 │   │
 │  └──────────────────────────────────────────────────────┘   │
-│                           │                                  │
-│                           ▼                                  │
+│                           │                                 │
+│                           ▼                                 │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │              CLUSTER MANAGER                           │ │
-│  │  • Standalone / YARN / Mesos / Kubernetes            │ │
-│  │  • Gerencia recursos do cluster                      │ │
+│  │  • Standalone / YARN / Mesos / Kubernetes              │ │
+│  │  • Gerencia recursos do cluster                        │ │
 │  └────────────────────────────────────────────────────────┘ │
-│                           │                                  │
+│                           │                                 │
 │         ┌─────────────────┼─────────────────┐               │
 │         ▼                 ▼                 ▼               │
-│  ┌───────────┐     ┌───────────┐     ┌───────────┐         │
-│  │ EXECUTOR  │     │ EXECUTOR  │     │ EXECUTOR  │         │
-│  │ ┌───────┐ │     │ ┌───────┐ │     │ ┌───────┐ │         │
-│  │ │ Task  │ │     │ │ Task  │ │     │ │ Task  │ │         │
-│  │ ├───────┤ │     │ ├───────┤ │     │ ├───────┤ │         │
-│  │ │ Task  │ │     │ │ Task  │ │     │ │ Task  │ │         │
-│  │ └───────┘ │     │ └───────┘ │     │ └───────┘ │         │
-│  │  Cache    │     │  Cache    │     │  Cache    │         │
-│  └───────────┘     └───────────┘     └───────────┘         │
-│                                                              │
+│  ┌───────────┐     ┌───────────┐     ┌───────────┐          │
+│  │ EXECUTOR  │     │ EXECUTOR  │     │ EXECUTOR  │          │
+│  │ ┌───────┐ │     │ ┌───────┐ │     │ ┌───────┐ │          │
+│  │ │ Task  │ │     │ │ Task  │ │     │ │ Task  │ │          │
+│  │ ├───────┤ │     │ ├───────┤ │     │ ├───────┤ │          │
+│  │ │ Task  │ │     │ │ Task  │ │     │ │ Task  │ │          │
+│  │ └───────┘ │     │ └───────┘ │     │ └───────┘ │          │
+│  │  Cache    │     │  Cache    │     │  Cache    │          │
+│  └───────────┘     └───────────┘     └───────────┘          │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -589,6 +589,8 @@ docker run --rm \
   pyspark-app:v1.0 \
   python spark_sales_analysis.py
 ```
+***Se não voltar ao prompt, tecle [CRTL] +[C]***
+
 
 **Opção 2: Executar word count**
 ```bash
@@ -598,13 +600,6 @@ docker run --rm \
   python spark_word_count.py
 ```
 
-**Opção 3: Shell interativo**
-```bash
-docker run -it --rm \
-  -v "$(pwd)/data:/app/data" \
-  pyspark-app:v1.0 \
-  bash
-```
 
 ### 5.4 Docker Compose
 
@@ -903,9 +898,3 @@ Parabéns! Você completou o laboratório de PySpark.
 
 ---
 
-**Desenvolvido para o curso de Ciência de Dados**  
-**Versão 1.0 - Novembro 2025**
-
-**Autor**: Professor/Instrutor  
-**Contato**: professor@cienciadados.edu  
-**Licença**: MIT - Livre para uso educacional
