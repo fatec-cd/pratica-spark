@@ -6,7 +6,8 @@
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "moby": true,
-      "dockerDashComposeVersion": "v2"
+      "dockerDashComposeVersion": "v2",
+      "enableNonRootDocker": "true"
     },
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17",
@@ -42,7 +43,7 @@
     }
   },
 
-  "postCreateCommand": "bash ${containerWorkspaceFolder}/init-repo.sh",
+  "postCreateCommand": "bash ${containerWorkspaceFolder}/init-repo.sh && sudo usermod -aG docker vscode || true",
 
   "forwardPorts": [4040, 8888],
   "portsAttributes": {

@@ -334,14 +334,31 @@ Verifique:
 3. Clique em "Create codespace on main"
 4. Aguarde o ambiente carregar (pode levar 2-3 minutos - Spark requer mais recursos)
 
-**Passo 4:** Verifique o ambiente
+**Passo 4:** **🔧 IMPORTANTE - Configure as permissões do Docker**
+
+No GitHub Codespaces, é necessário adicionar seu usuário ao grupo Docker:
+
+```bash
+# Execute este comando no terminal do Codespaces
+sudo usermod -aG docker $USER && newgrp docker
+```
+
+**Por que isso é necessário?** O Docker daemon requer permissões especiais. Este comando adiciona seu usuário ao grupo `docker`, permitindo executar comandos Docker sem `sudo`.
+
+**Passo 5:** Verifique o ambiente
 
 ```bash
 python3 --version
 docker --version
+docker ps  # Este comando deve funcionar sem erros
 ```
 
-**Passo 5:** Explore a estrutura do projeto
+**Se ainda houver erro de permissão**, reinicie o Codespace:
+- Clique nos três pontos (...) no canto superior
+- Selecione "Restart Codespace"
+- Aguarde reiniciar e tente novamente
+
+**Passo 6:** Explore a estrutura do projeto
 
 ```bash
 ls -la pyspark_app/
@@ -524,6 +541,30 @@ cat Dockerfile
 
 ### 5.2 Construindo a Imagem Docker
 
+**⚠️ Resolução do Erro de Permissão**
+
+Se você receber o erro:
+```
+ERROR: permission denied while trying to connect to the Docker daemon socket
+```
+
+**Causa**: No GitHub Codespaces, o usuário precisa estar no grupo `docker` para acessar o daemon.
+
+**Solução (execute uma vez)**:
+```bash
+# Adicione seu usuário ao grupo docker
+sudo usermod -aG docker $USER && newgrp docker
+
+# Verifique se funcionou
+docker ps
+```
+
+Se ainda houver problema, reinicie o Codespace (Menu ... → Restart Codespace).
+
+---
+
+**Agora sim, construa a imagem:**
+
 ```bash
 # Navegar para o diretório correto
 cd pyspark_app
@@ -533,6 +574,11 @@ docker build -t pyspark-app:v1.0 .
 ```
 
 Aguarde o build (pode levar 3-5 minutos na primeira vez).
+
+**Verificar a imagem criada:**
+```bash
+docker images | grep pyspark-app
+```
 
 ### 5.3 Executando o Container
 
@@ -724,6 +770,44 @@ R: Sim, desde que consiga executar todas as partes e gerar as evidências.
 ---
 
 ## Apêndice A: Troubleshooting
+
+### 🚨 Problema: "Permission denied" ao acessar Docker daemon (GITHUB CODESPACES)
+
+Este é o problema **mais comum** ao executar o item 5.2 do roteiro no GitHub Codespaces.
+
+**Erro completo**:
+```
+ERROR: permission denied while trying to connect to the Docker daemon socket at 
+unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": 
+dial unix /var/run/docker.sock: connect: permission denied
+```
+
+**Causa**: O usuário não tem permissões para acessar o Docker daemon.
+
+**✅ Solução Rápida** (execute no terminal do Codespaces):
+```bash
+sudo usermod -aG docker $USER && newgrp docker
+```
+
+**Teste se funcionou**:
+```bash
+docker ps
+```
+
+**Se ainda não funcionar**:
+1. Clique nos três pontos `...` no canto superior do Codespaces
+2. Selecione **"Restart Codespace"**
+3. Aguarde reiniciar e teste novamente: `docker ps`
+
+**Solução Alternativa** - Use o script automático:
+```bash
+chmod +x setup-docker-permissions.sh
+bash setup-docker-permissions.sh
+```
+
+**📄 Para mais detalhes**, consulte: `CODESPACES_SETUP.md`
+
+---
 
 ### Problema: "Java not found"
 
