@@ -4,18 +4,18 @@ Word Count com PySpark - Exemplo Básico
 Demonstra conceitos fundamentais do Spark
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import explode, split, lower, col, desc
 import time
 
+from spark_environment import local_spark_builder
+
 def create_spark_session():
     """Cria e configura SparkSession"""
-    return SparkSession.builder \
-        .appName("WordCount-PySpark") \
-        .master("local[*]") \
-        .config("spark.driver.memory", "2g") \
-        .config("spark.sql.shuffle.partitions", "4") \
-        .getOrCreate()
+    return local_spark_builder(
+        app_name="WordCount-PySpark",
+        driver_memory="2g",
+        shuffle_partitions="4",
+    ).getOrCreate()
 
 def word_count_rdd_approach(spark, input_file):
     """
@@ -161,18 +161,19 @@ def main():
     
     # Arquivo de entrada
     input_file = "data/input.txt"
-    
-    # Cria SparkSession
-    spark = create_spark_session()
-    
-    # Configura log level para reduzir verbosidade
-    spark.sparkContext.setLogLevel("WARN")
-    
-    print(f"\n📂 Arquivo de entrada: {input_file}")
-    print(f"⚙️  Spark Version: {spark.version}")
-    print(f"💻 Cores disponíveis: {spark.sparkContext.defaultParallelism}")
+    spark = None
     
     try:
+        # Cria SparkSession
+        spark = create_spark_session()
+        
+        # Configura log level para reduzir verbosidade
+        spark.sparkContext.setLogLevel("WARN")
+        
+        print(f"\n📂 Arquivo de entrada: {input_file}")
+        print(f"⚙️  Spark Version: {spark.version}")
+        print(f"💻 Cores disponíveis: {spark.sparkContext.defaultParallelism}")
+        
         # Executa diferentes abordagens
         word_count_rdd_approach(spark, input_file)
         word_count_dataframe_approach(spark, input_file)
@@ -194,12 +195,15 @@ def main():
     except FileNotFoundError:
         print(f"\n❌ Erro: Arquivo '{input_file}' não encontrado!")
         print("💡 Execute primeiro: python3 data_generator.py")
+    except RuntimeError as e:
+        print(f"\n❌ Ambiente incompatível: {e}")
     except Exception as e:
         print(f"\n❌ Erro durante execução: {e}")
     finally:
         # Encerra SparkSession
-        spark.stop()
-        print("\n🔚 SparkSession encerrada.")
+        if spark:
+            spark.stop()
+            print("\n🔚 SparkSession encerrada.")
 
 if __name__ == "__main__":
     main()

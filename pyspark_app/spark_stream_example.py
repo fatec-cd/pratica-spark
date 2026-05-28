@@ -4,20 +4,20 @@ Exemplo de Spark Streaming (Estruturado)
 Demonstra processamento de dados em tempo real
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, window, count, sum, avg, explode, split, from_json
 )
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType
 import time
 
+from spark_environment import local_spark_builder
+
 def create_spark_session():
     """Cria SparkSession com suporte a streaming"""
-    return SparkSession.builder \
-        .appName("SparkStreamingExample") \
-        .master("local[*]") \
-        .config("spark.driver.memory", "2g") \
-        .getOrCreate()
+    return local_spark_builder(
+        app_name="SparkStreamingExample",
+        driver_memory="2g",
+    ).getOrCreate()
 
 def streaming_word_count_example(spark):
     """
@@ -196,19 +196,21 @@ def main():
     print("=" * 60)
     print("  SPARK STREAMING - EXEMPLOS E CONCEITOS")
     print("=" * 60)
+    spark = None
     
-    spark = create_spark_session()
-    spark.sparkContext.setLogLevel("WARN")
-    
-    print(f"\n⚙️  Spark Version: {spark.version}")
-    
-    # Mostra comparação conceitual
-    batch_vs_streaming_comparison()
-    
-    print("\n" + "="*60)
-    print("📝 NOTA SOBRE STREAMING")
-    print("="*60)
-    print("""
+    try:
+        spark = create_spark_session()
+        spark.sparkContext.setLogLevel("WARN")
+        
+        print(f"\n⚙️  Spark Version: {spark.version}")
+        
+        # Mostra comparação conceitual
+        batch_vs_streaming_comparison()
+        
+        print("\n" + "="*60)
+        print("📝 NOTA SOBRE STREAMING")
+        print("="*60)
+        print("""
 Este exemplo demonstra CONCEITOS de Spark Streaming.
 
 Para executar streaming real, você precisaria:
@@ -229,13 +231,16 @@ Principais diferenças na API:
 Para este laboratório, focamos em BATCH PROCESSING, que é
 mais adequado para ambiente de aprendizado e análises históricas.
     """)
-    
-    print("\n📚 Recursos para aprender mais sobre Streaming:")
-    print("   • https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html")
-    print("   • https://www.databricks.com/glossary/structured-streaming")
-    
-    spark.stop()
-    print("\n🔚 SparkSession encerrada.")
+        
+        print("\n📚 Recursos para aprender mais sobre Streaming:")
+        print("   • https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html")
+        print("   • https://www.databricks.com/glossary/structured-streaming")
+    except RuntimeError as e:
+        print(f"\n❌ Ambiente incompatível: {e}")
+    finally:
+        if spark:
+            spark.stop()
+            print("\n🔚 SparkSession encerrada.")
 
 if __name__ == "__main__":
     main()

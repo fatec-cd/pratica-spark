@@ -39,7 +39,7 @@ Esta atividade deve ser executada no **GitHub Codespaces**. O objetivo e manter 
 Voce usara:
 
 - **GitHub Codespaces**: ambiente de desenvolvimento na nuvem
-- **Python e PySpark**: execucao dos scripts de analise
+- **Python 3.11, Java 17 e PySpark 3.5.x**: execucao dos scripts de analise
 - **Scripts do repositorio**: preparacao das dependencias e dos dados
 - **Dataset sintetico**: dados de vendas de e-commerce
 
@@ -344,7 +344,7 @@ Voce deve encontrar estes arquivos principais:
 | Situacao | Como prevenir ou corrigir |
 | --- | --- |
 | Dependencias Python ausentes | Execute `./init-repo.sh` na raiz do repositorio |
-| Java ausente | Execute `sudo apt-get install -y default-jdk` |
+| Java ausente ou versao incompativel | Execute `./init-repo.sh` para instalar/configurar OpenJDK 17 |
 | Dataset ausente | Execute `python3 data_generator.py` dentro de `pyspark_app` |
 | Comando executado no diretorio errado | Entre em `pyspark_app` antes de rodar os scripts |
 | Codespace parado ou expirado | Reabra o Codespace pelo GitHub; faca commits para preservar alteracoes |
@@ -411,10 +411,18 @@ Perguntas de observacao:
 
 ### 4.3 Exemplo simples: Word Count com PySpark
 
-Antes da analise de vendas, execute um exemplo pequeno:
+Antes da analise de vendas, abra `spark_word_count.py` no editor do Codespaces. Use o Explorer lateral ou pressione `Ctrl+P`, digite `spark_word_count.py` e confirme com Enter.
+
+Com o arquivo aberto no editor, localize:
+
+- A funcao que cria a SparkSession
+- A leitura de `data/input.txt`
+- As tres abordagens de Word Count: RDD, DataFrame e SQL
+- A chamada que exibe o plano de execucao
+
+Depois, execute o exemplo no terminal:
 
 ```bash
-cat spark_word_count.py
 python3 spark_word_count.py
 ```
 
@@ -435,11 +443,7 @@ Criterio de sucesso: o terminal deve exibir rankings de palavras e o plano de ex
 
 ### 4.4 Analise de vendas: leitura e exploracao
 
-Abra o arquivo principal:
-
-```bash
-cat spark_sales_analysis.py
-```
+Abra `spark_sales_analysis.py` no editor do Codespaces. Use o Explorer lateral ou `Ctrl+P` para localizar o arquivo rapidamente.
 
 Observe no codigo:
 
@@ -658,11 +662,42 @@ Solucao:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y default-jdk
+sudo apt-get install -y openjdk-17-jdk
 java -version
 ```
 
 Se voce executou `./init-repo.sh`, essa verificacao ja foi feita pelo script.
+
+### Problema: `java.util.ServiceConfigurationError: org.apache.hadoop.fs.FileSystem: Provider org.apache.hadoop.fs.viewfs.ViewFileSystem could not be instantiated`
+
+Causas provaveis:
+
+- Java novo demais para a combinacao Spark/Hadoop usada no roteiro, especialmente Java 21 ou superior
+- Codespace criado antes da configuracao padronizada do repositorio
+- Instalacao de PySpark fora da linha 3.5.x esperada pelo laboratorio
+- Uso de Python fora da faixa 3.8 a 3.11 em execucao local
+
+Solucao recomendada no Codespaces:
+
+```bash
+./init-repo.sh
+cd pyspark_app
+python3 -m pip install --force-reinstall -r requirements.txt
+python3 spark_word_count.py
+```
+
+Se o Codespace ainda estiver usando Java 21 ou superior, recrie o Codespace. O repositorio agora inclui uma configuracao `.devcontainer` com Python 3.11 e Java 17.
+
+Para verificar:
+
+```bash
+java -version
+python3 -m pip show pyspark
+```
+
+O Java deve ser 11 ou 17, preferencialmente 17, e o PySpark deve estar na linha 3.5.x.
+
+Em execucao local fora do Codespaces, use Python 3.8 a 3.11. Python 3.12 pode fazer os workers do PySpark falharem durante as acoes do Spark.
 
 ### Problema: "ModuleNotFoundError: No module named 'pyspark'"
 

@@ -35,15 +35,27 @@ else
     exit 1
 fi
 
-# Verifica Java
+# Verifica Java. Spark 3.5/Hadoop deve rodar com Java 11 ou 17; Java 21+
+# pode falhar na inicializacao com erro em org.apache.hadoop.fs.viewfs.ViewFileSystem.
 echo -n "   Java: "
+JAVA_MAJOR=""
 if command -v java &> /dev/null; then
-    echo -e "${GREEN}✅ Instalado${NC}"
+    JAVA_MAJOR=$(java -XshowSettings:properties -version 2>&1 | awk -F= '/java.specification.version/ {gsub(/ /,"",$2); split($2, version, "."); if (version[1] == "1") print version[2]; else print version[1]; exit}')
+fi
+
+if [ "$JAVA_MAJOR" = "11" ] || [ "$JAVA_MAJOR" = "17" ]; then
+    echo -e "${GREEN}✅ Java $JAVA_MAJOR instalado${NC}"
 else
-    echo -e "${YELLOW}⚠️  Não encontrado - Instalando...${NC}"
+    if [ -n "$JAVA_MAJOR" ]; then
+        echo -e "${YELLOW}⚠️  Java $JAVA_MAJOR detectado - instalando OpenJDK 17...${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Não encontrado - instalando OpenJDK 17...${NC}"
+    fi
     sudo apt-get update -qq
-    sudo apt-get install -y openjdk-11-jdk -qq
-    echo -e "   ${GREEN}✅ Java instalado${NC}"
+    sudo apt-get install -y openjdk-17-jdk -qq
+    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    export PATH="$JAVA_HOME/bin:$PATH"
+    echo -e "   ${GREEN}✅ Java 17 configurado${NC}"
 fi
 
 echo ""

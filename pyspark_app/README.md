@@ -6,8 +6,8 @@ Aplicacao de analise de dados usando Apache Spark e PySpark em um caso de vendas
 
 ### Pre-requisitos
 
-- Python 3.8+
-- Java 11+ ou superior
+- Python 3.8 a 3.11, preferencialmente Python 3.11 no Codespaces
+- Java 11 ou 17, preferencialmente Java 17
 - Dependencias instaladas a partir de `requirements.txt`
 
 Na raiz do repositorio, o comando recomendado e:
@@ -157,13 +157,21 @@ spark-submit --conf spark.sql.shuffle.partitions=16 spark_sales_analysis.py
 
 ## Troubleshooting
 
-### Java not found
+### Java not found ou erro ViewFileSystem do Hadoop
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y default-jdk
+sudo apt-get install -y openjdk-17-jdk
 java -version
 ```
+
+Se aparecer `Provider org.apache.hadoop.fs.viewfs.ViewFileSystem could not be instantiated`, verifique se o ambiente esta usando Java 21 ou superior. Para este laboratorio, use Java 17 e reinstale as dependencias com:
+
+```bash
+python3 -m pip install --force-reinstall -r requirements.txt
+```
+
+Tambem confirme que o Python esta na faixa 3.8 a 3.11. Python 3.12 pode iniciar o Spark, mas falhar quando os workers do PySpark executam as acoes.
 
 ### PySpark nao encontrado
 

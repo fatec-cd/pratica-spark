@@ -4,7 +4,6 @@ Análise de Vendas de E-commerce com PySpark
 Demonstra análises complexas usando DataFrames e SQL
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, sum, count, avg, max, min, round, desc, asc,
     year, month, dayofweek, date_format, to_date, expr
@@ -12,16 +11,16 @@ from pyspark.sql.functions import (
 from pyspark.sql.window import Window
 import time
 
+from spark_environment import local_spark_builder
+
 def create_spark_session():
     """Cria e configura SparkSession com configurações otimizadas"""
-    return SparkSession.builder \
-        .appName("SalesAnalysis-PySpark") \
-        .master("local[*]") \
-        .config("spark.driver.memory", "2g") \
-        .config("spark.executor.memory", "2g") \
-        .config("spark.sql.shuffle.partitions", "8") \
-        .config("spark.sql.adaptive.enabled", "true") \
-        .getOrCreate()
+    return local_spark_builder(
+        app_name="SalesAnalysis-PySpark",
+        driver_memory="2g",
+        executor_memory="2g",
+        shuffle_partitions="8",
+    ).config("spark.sql.adaptive.enabled", "true").getOrCreate()
 
 def load_data(spark, file_path):
     """
@@ -345,18 +344,19 @@ def main():
     print("=" * 60)
     
     start_time = time.time()
-    
-    # Cria SparkSession
-    spark = create_spark_session()
-    spark.sparkContext.setLogLevel("WARN")
-    
-    print(f"\n⚙️  Configuração do Spark:")
-    print(f"   • Versão: {spark.version}")
-    print(f"   • Cores: {spark.sparkContext.defaultParallelism}")
-    print(f"   • Memória Driver: 2GB")
-    print(f"   • Memória Executor: 2GB")
+    spark = None
     
     try:
+        # Cria SparkSession
+        spark = create_spark_session()
+        spark.sparkContext.setLogLevel("WARN")
+        
+        print(f"\n⚙️  Configuração do Spark:")
+        print(f"   • Versão: {spark.version}")
+        print(f"   • Cores: {spark.sparkContext.defaultParallelism}")
+        print(f"   • Memória Driver: 2GB")
+        print(f"   • Memória Executor: 2GB")
+        
         # Arquivo de entrada
         input_file = "data/sales_data.csv"
         
@@ -401,14 +401,17 @@ def main():
     except FileNotFoundError:
         print(f"\n❌ Erro: Arquivo não encontrado!")
         print("💡 Execute primeiro: python3 data_generator.py")
+    except RuntimeError as e:
+        print(f"\n❌ Ambiente incompatível: {e}")
     except Exception as e:
         print(f"\n❌ Erro durante análise: {e}")
         import traceback
         traceback.print_exc()
     finally:
         # Encerra SparkSession
-        spark.stop()
-        print("\n🔚 SparkSession encerrada.")
+        if spark:
+            spark.stop()
+            print("\n🔚 SparkSession encerrada.")
 
 if __name__ == "__main__":
     main()

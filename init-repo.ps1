@@ -27,16 +27,38 @@ if ($LASTEXITCODE -eq 0) {
     exit 1
 }
 
-# Verifica Java
+# Verifica Java. Spark 3.5/Hadoop deve rodar com Java 11 ou 17; Java 21+
+# pode falhar na inicializacao com erro em org.apache.hadoop.fs.viewfs.ViewFileSystem.
 Write-Host -NoNewline "   Java: "
-$javaVersion = java -version 2>&1
+$javaSettings = java -XshowSettings:properties -version 2>&1
+$javaMajor = $null
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Instalado" -ForegroundColor Green
-} else {
-    Write-Host "⚠️  Não encontrado - Instalando..." -ForegroundColor Yellow
+    $specLine = $javaSettings | Where-Object { $_ -match "java\.specification\.version\s*=\s*([0-9]+)(\.([0-9]+))?" } | Select-Object -First 1
+    if ($specLine -match "java\.specification\.version\s*=\s*([0-9]+)(\.([0-9]+))?") {
+        $javaMajor = [int]$Matches[1]
+        if ($javaMajor -eq 1 -and $Matches[3]) {
+            $javaMajor = [int]$Matches[3]
+        }
+    }
+}
+
+if ($javaMajor -eq 11 -or $javaMajor -eq 17) {
+    Write-Host "✅ Java $javaMajor instalado" -ForegroundColor Green
+} elseif ($IsLinux) {
+    if ($javaMajor) {
+        Write-Host "⚠️  Java $javaMajor detectado - instalando OpenJDK 17..." -ForegroundColor Yellow
+    } else {
+        Write-Host "⚠️  Não encontrado - instalando OpenJDK 17..." -ForegroundColor Yellow
+    }
     sudo apt-get update -qq
-    sudo apt-get install -y openjdk-11-jdk -qq
-    Write-Host "   ✅ Java instalado" -ForegroundColor Green
+    sudo apt-get install -y openjdk-17-jdk -qq
+    $env:JAVA_HOME = "/usr/lib/jvm/java-17-openjdk-amd64"
+    $env:PATH = "$env:JAVA_HOME/bin:$env:PATH"
+    Write-Host "   ✅ Java 17 configurado" -ForegroundColor Green
+} else {
+    Write-Host "❌ Java 11 ou 17 é necessário para este roteiro" -ForegroundColor Red
+    Write-Host "   Instale o JDK 17 ou execute no GitHub Codespaces." -ForegroundColor Yellow
+    exit 1
 }
 
 Write-Host ""
