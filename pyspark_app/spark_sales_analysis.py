@@ -323,18 +323,26 @@ def generate_executive_summary(df):
     avg_ticket = df.select(avg("revenue")).first()[0]
     num_customers = df.select("customer_id").distinct().count()
     num_products = df.select("product_id").distinct().count()
-    
-    print(f"""
-╔══════════════════════════════════════════════════════════╗
-║                    KPIS PRINCIPAIS                       ║
-╠══════════════════════════════════════════════════════════╣
-║  💰 Receita Total:          R$ {total_revenue:>15,.2f}   ║
-║  🛒 Total de Transações:       {total_transactions:>15,}   ║
-║  🎫 Ticket Médio:           R$ {avg_ticket:>15,.2f}   ║
-║  👥 Clientes Únicos:           {num_customers:>15,}   ║
-║  📦 Produtos Únicos:           {num_products:>15,}   ║
-╚══════════════════════════════════════════════════════════╝
-    """)
+
+    kpis = [
+        ("💰 Receita Total", f"R$ {total_revenue:,.2f}"),
+        ("🛒 Total de Transações", f"{total_transactions:,}"),
+        ("🎫 Ticket Médio", f"R$ {avg_ticket:,.2f}"),
+        ("👥 Clientes Únicos", f"{num_customers:,}"),
+        ("📦 Produtos Únicos", f"{num_products:,}"),
+    ]
+
+    label_width = 28
+    value_width = 18
+    content_width = label_width + value_width + 7
+
+    print()
+    print("╔" + "═" * content_width + "╗")
+    print("║" + "KPIS PRINCIPAIS".center(content_width) + "║")
+    print("╠" + "═" * content_width + "╣")
+    for label, value in kpis:
+        print(f"║  {label + ':':<{label_width}} {value:>{value_width}}   ║")
+    print("╚" + "═" * content_width + "╝")
 
 def main():
     """Função principal - orquestra todas as análises"""
