@@ -1,162 +1,121 @@
-# Guia de Permissões - Docker no Windows
+# Guia de Permissões - Docker no GitHub Codespaces
 
-## ✅ Correções Implementadas
+Este guia complementa o roteiro principal. O ambiente oficial da atividade é o **GitHub Codespaces**, portanto as orientações abaixo priorizam problemas comuns nesse ambiente.
 
-### 1. **Dockerfile**
-- ✅ Ajustado proprietário dos arquivos para o usuário `spark`
-- ✅ Permissões 777 nos diretórios de dados para garantir leitura/escrita
-- ✅ Scripts Python marcados como executáveis
-- ✅ Diretório `/tmp` com permissões adequadas para Spark
+## O que já foi preparado no projeto
 
-### 2. **docker-compose.yml**
-- ✅ Adicionado `user: root` em todos os serviços que precisam escrever em volumes
-- ✅ Necessário para compatibilidade Windows ↔ Linux nos volumes montados
+### Dockerfile
 
-## 🔧 Pré-requisitos no Windows
+- Cria o diretório `/app/data` usado pelos scripts PySpark.
+- Ajusta permissões para leitura e escrita dos dados.
+- Instala Java e dependências Python necessárias para executar PySpark dentro do container.
+- Define um usuário não-root como padrão na imagem.
 
-### 1. Docker Desktop Configurado Corretamente
+### docker-compose.yml
 
-Certifique-se de que o Docker Desktop está configurado para compartilhar a unidade:
+- Monta `./data:/app/data` para persistir datasets e resultados.
+- Usa `user: root` nos serviços do Compose para evitar falhas de escrita em volumes montados no ambiente de laboratório.
+- Define serviços separados para geração de dados, word count, análise de vendas, shell interativo e Jupyter.
 
-1. Abra **Docker Desktop**
-2. Vá em **Settings** → **Resources** → **File Sharing**
-3. Certifique-se de que a unidade `D:\` está na lista de drives compartilhados
-4. Se não estiver, adicione e clique em **Apply & Restart**
+## Verificação inicial no Codespaces
 
-### 2. WSL2 (Recomendado)
+Execute no terminal do Codespaces, a partir da raiz do repositório:
 
-Se estiver usando WSL2 (recomendado para melhor performance):
-
-```powershell
-# Verificar se WSL2 está instalado
-wsl --list --verbose
-
-# Se não estiver, instalar
-wsl --install
+```bash
+python3 --version
+java -version
+docker --version
+docker ps
+docker compose version
 ```
 
-### 3. Permissões de Execução no PowerShell
+Se `docker compose version` não funcionar, teste:
 
-Se encontrar erros ao executar scripts `.ps1`:
-
-```powershell
-# Executar como Administrador
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```bash
+docker-compose --version
 ```
 
-## 🚀 Comandos que NÃO vão falhar
+Use o comando disponível no seu ambiente.
 
-### Build da imagem
-```powershell
-cd d:\fatec-cd\PySparkContainer\pyspark_app
-docker build -t pyspark-app .
+## Problema: permission denied ao acessar o Docker daemon
+
+Erro comum:
+
+```text
+ERROR: permission denied while trying to connect to the Docker daemon socket
 ```
 
-### Gerar dados
-```powershell
-docker compose --profile setup run --rm data-generator
+Causa provável: o usuário do Codespaces ainda não está com permissão para acessar o daemon do Docker.
+
+Solução rápida:
+
+```bash
+sudo usermod -aG docker $USER && newgrp docker
+docker ps
 ```
 
-### Executar análise de vendas
-```powershell
+Solução usando o script do projeto:
+
+```bash
+bash setup-docker-permissions.sh
+docker ps
+```
+
+Se o erro persistir, reinicie o Codespace pelo menu `...` e execute `docker ps` novamente.
+
+## Problema: arquivos de dados não aparecem no container
+
+Causa provável: o comando foi executado fora do diretório `pyspark_app` ou os dados ainda não foram gerados.
+
+Solução:
+
+```bash
+cd pyspark_app
+python3 data_generator.py
+docker run --rm -v "$(pwd)/data:/app/data" pyspark-app:v1.0 python3 spark_sales_analysis.py
+```
+
+## Problema: falha ao escrever em data/output
+
+Causa provável: diretório de saída ausente ou permissões antigas em arquivos gerados por containers anteriores.
+
+Solução:
+
+```bash
+cd pyspark_app
+mkdir -p data/output
+docker compose down -v
+docker compose build --no-cache
 docker compose up sales-analysis
 ```
 
-### Executar word count
-```powershell
-docker compose --profile examples run --rm word-count
+## Comandos recomendados no Codespaces
+
+```bash
+cd pyspark_app
+
+# Build da imagem
+docker build -t pyspark-app:v1.0 .
+
+# Gerar dados via Compose
+docker compose --profile setup up data-generator
+
+# Executar análise de vendas
+docker compose up sales-analysis
+
+# Executar word count
+docker compose --profile examples up word-count
 ```
 
-### Shell interativo
-```powershell
-docker compose --profile interactive run --rm pyspark-shell
-```
+## Observação sobre execução local
 
-### Jupyter Notebook
-```powershell
-docker compose --profile jupyter up
-```
+A atividade foi desenhada para Codespaces. A execução local pode funcionar, mas fica sujeita a diferenças de sistema operacional, Docker Desktop, WSL2, Java e permissões de volume. Use execução local apenas se o professor autorizar.
 
-## 🛠️ Troubleshooting
+## Checklist rápido
 
-### Problema: "Permission denied" ao escrever arquivos
-
-**Solução 1**: Criar manualmente o diretório de saída com permissões adequadas:
-```powershell
-New-Item -ItemType Directory -Force -Path .\data\output
-```
-
-**Solução 2**: Limpar volumes Docker antigos:
-```powershell
-docker compose down -v
-docker volume prune -f
-```
-
-**Solução 3**: Rebuild sem cache:
-```powershell
-docker compose build --no-cache
-```
-
-### Problema: "Access denied" ao fazer bind mount de volumes
-
-**Solução**: Certifique-se de que o Docker Desktop tem permissão para acessar a pasta:
-1. Abra Docker Desktop
-2. Settings → Resources → File Sharing
-3. Adicione a pasta do projeto
-4. Restart Docker Desktop
-
-### Problema: Container não inicia ou trava
-
-**Solução**: Aumentar recursos do Docker:
-1. Docker Desktop → Settings → Resources
-2. Aumentar Memory para pelo menos 4GB
-3. Aumentar CPUs para pelo menos 2
-4. Apply & Restart
-
-### Problema: "Error response from daemon: user not found"
-
-**Solução**: Isso foi corrigido! Todos os serviços agora usam `user: root` no docker-compose.yml
-
-## 📝 Notas Importantes
-
-1. **Segurança**: Usar `root` no container é seguro para desenvolvimento local, mas não recomendado para produção.
-
-2. **Windows + WSL2**: A combinação oferece melhor performance e menos problemas de permissão.
-
-3. **Volumes**: Os volumes montados (`./data:/app/data`) permitem que os dados persistam entre execuções.
-
-4. **Firewall**: Certifique-se de que o Windows Firewall não está bloqueando o Docker.
-
-## ✨ Checklist Final
-
-Antes de executar os comandos Docker, verifique:
-
-- [ ] Docker Desktop está rodando
-- [ ] Drive está compartilhado no Docker Desktop
-- [ ] WSL2 está instalado e configurado (se aplicável)
-- [ ] Pasta do projeto existe e é acessível
-- [ ] PowerShell tem permissões adequadas para executar scripts
-- [ ] Nenhum outro container está usando as mesmas portas (8888 para Jupyter)
-
-## 🎯 Comandos de Verificação Rápida
-
-```powershell
-# Verificar se Docker está rodando
-docker ps
-
-# Verificar versão do Docker
-docker --version
-
-# Verificar se WSL2 está ativo
-wsl --list --verbose
-
-# Verificar recursos disponíveis
-docker system df
-
-# Limpar recursos não utilizados
-docker system prune -a --volumes
-```
-
----
-
-**Resultado**: Com essas configurações, os comandos Docker **NÃO** vão falhar por problemas de permissões! 🎉
+- [ ] O Codespace está aberto no fork correto.
+- [ ] `./init-repo.sh` foi executado na raiz do repositório.
+- [ ] `docker ps` funciona sem erro de permissão.
+- [ ] Os comandos estão sendo executados dentro de `pyspark_app` quando envolvem Docker.
+- [ ] O diretório `pyspark_app/data` contém os arquivos gerados.
+- [ ] O diretório `pyspark_app/data/output` existe ou será criado pela análise.

@@ -93,7 +93,7 @@ python3 spark_sales_analysis.py
 docker build -t pyspark-app:v1.0 .
 
 # Execução
-docker-compose up sales-analysis
+docker compose up sales-analysis
 ```
 
 ## 📖 Conteúdo do Roteiro
@@ -231,16 +231,16 @@ services:
 
 ```bash
 # Build
-docker-compose build
+docker compose build
 
 # Executar análise
-docker-compose up sales-analysis
+docker compose up sales-analysis
 
 # Shell interativo
-docker-compose --profile interactive up pyspark-shell
+docker compose --profile interactive up pyspark-shell
 
 # Jupyter Notebook
-docker-compose --profile jupyter up jupyter
+docker compose --profile jupyter up jupyter
 ```
 
 ## 📊 Resultados

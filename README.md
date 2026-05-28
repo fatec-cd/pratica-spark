@@ -26,19 +26,29 @@ Ao final desta atividade, você será capaz de:
 - Conhecimento básico de Python
 - Familiaridade com linha de comando (terminal/bash)
 - Conceitos básicos de SQL (desejável)
-- Conta no GitHub (gratuita)
-- Conta no Docker Hub (gratuita)
+- Conta no GitHub com acesso ao GitHub Codespaces
 - Navegador web moderno
 
 ---
 
 ## Recursos Necessários
 
-Todos os recursos podem ser acessados online gratuitamente:
+Esta atividade foi revisada para ser executada integralmente no **GitHub Codespaces**, sem instalação local de Python, Java, Spark ou Docker.
 
-- **GitHub Codespaces** (ambiente de desenvolvimento na nuvem)
-- **Play with Docker** (https://labs.play-with-docker.com/) - Ambiente Docker online
+- **GitHub Codespaces**: ambiente de desenvolvimento na nuvem
+- **Docker dentro do Codespaces**: usado para construir e executar a aplicação containerizada
+- **Scripts do repositório**: usados para preparar dependências, dados e diretórios
 - **Dataset**: Dados de vendas de e-commerce para análise
+
+### Como usar este roteiro
+
+Siga as partes na ordem. Cada checkpoint indica o que deve estar funcionando antes de avançar. Se um comando falhar, consulte primeiro o **Apêndice A: Troubleshooting**, pois ele reúne os problemas mais comuns em Codespaces.
+
+Ao longo da atividade, procure diferenciar três camadas:
+
+1. **Conceito**: o que Spark faz e por que faz dessa forma
+2. **Implementação**: como o conceito aparece nos scripts PySpark
+3. **Infraestrutura**: como Docker e Codespaces tornam a execução reprodutível
 
 ---
 
@@ -214,40 +224,39 @@ Antes de prosseguir, responda:
 
 ---
 
-## ⚠️ Importante: Permissões do Docker (Windows)
+## Importante: ambiente padronizado da atividade
 
-### Configurações Necessárias
+O ambiente oficial desta atividade é o **GitHub Codespaces**. Isso reduz diferenças entre Windows, macOS e Linux e evita que a execução dependa de instalações locais.
 
-Para garantir que os comandos Docker funcionem corretamente no Windows, siga estas etapas:
+Antes de iniciar a parte prática, confirme estes pontos no terminal do Codespaces:
 
-#### 1. Docker Desktop - Compartilhamento de Drive
-1. Abra **Docker Desktop**
-2. Vá em **Settings** → **Resources** → **File Sharing**
-3. Certifique-se de que a unidade do projeto está compartilhada
-4. Clique em **Apply & Restart**
-
-#### 2. PowerShell - Permissões de Execução
-Execute no PowerShell como Administrador:
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```bash
+python3 --version
+java -version
+docker --version
+docker compose version
 ```
 
-#### 3. WSL2 (Recomendado)
-```powershell
-# Verificar instalação
-wsl --list --verbose
+Se `docker compose version` não funcionar, teste:
 
-# Se necessário, instalar
-wsl --install
+```bash
+docker-compose --version
 ```
 
-### Correções Implementadas
+Use o comando disponível no seu Codespace. No roteiro, o padrão será `docker compose`, que é o comando atual do Docker Compose.
 
-✅ **Dockerfile**: Permissões adequadas para diretórios de dados  
-✅ **docker-compose.yml**: Configuração `user: root` para acesso a volumes  
-✅ **Compatibilidade Windows**: Bind mounts funcionando corretamente
+### Situações que podem prejudicar a execução
 
-**📄 Para mais detalhes**, consulte: `pyspark_app/PERMISSIONS_GUIDE.md`
+| Situação | Como prevenir ou corrigir |
+|---|---|
+| Dependências Python ausentes | Execute `./init-repo.sh` antes da Parte 4 |
+| Erro de permissão no Docker | Execute `bash setup-docker-permissions.sh` ou reinicie o Codespace |
+| Dataset não encontrado | Execute `python3 data_generator.py` dentro de `pyspark_app` |
+| Comando `docker-compose` indisponível | Use `docker compose` |
+| Build Docker lento na primeira execução | Aguarde o download das camadas; isso é esperado |
+| Codespace parado ou expirado | Reabra o Codespace pelo GitHub; faça commits para preservar alterações |
+
+**Para detalhes sobre volumes e permissões**, consulte [pyspark_app/PERMISSIONS_GUIDE.md](pyspark_app/PERMISSIONS_GUIDE.md).
 
 ---
 
@@ -334,29 +343,34 @@ Verifique:
 3. Clique em "Create codespace on main"
 4. Aguarde o ambiente carregar (pode levar 2-3 minutos - Spark requer mais recursos)
 
-**Passo 4:** **🔧 IMPORTANTE - Configure as permissões do Docker**
+**Passo 4:** Prepare o ambiente do laboratório
 
-No GitHub Codespaces, é necessário adicionar seu usuário ao grupo Docker:
+No terminal do Codespaces, execute o script de preparação. Ele verifica Python, Docker e Java, instala as dependências Python e gera os dados iniciais.
 
 ```bash
-# Execute este comando no terminal do Codespaces
-sudo usermod -aG docker $USER && newgrp docker
+chmod +x init-repo.sh setup-docker-permissions.sh
+./init-repo.sh
 ```
 
-**Por que isso é necessário?** O Docker daemon requer permissões especiais. Este comando adiciona seu usuário ao grupo `docker`, permitindo executar comandos Docker sem `sudo`.
+Critério de sucesso: ao final, o terminal deve mostrar que o setup foi concluído e que os dados de exemplo foram gerados.
 
-**Passo 5:** Verifique o ambiente
+**Passo 5:** Verifique o ambiente antes de avançar
 
 ```bash
 python3 --version
+java -version
 docker --version
-docker ps  # Este comando deve funcionar sem erros
+docker ps
+docker compose version
 ```
 
-**Se ainda houver erro de permissão**, reinicie o Codespace:
-- Clique nos três pontos (...) no canto superior
-- Selecione "Restart Codespace"
-- Aguarde reiniciar e tente novamente
+Se `docker ps` retornar erro de permissão, execute:
+
+```bash
+bash setup-docker-permissions.sh
+```
+
+Se ainda houver problema, reinicie o Codespace: clique nos três pontos `...`, selecione **Restart Codespace**, aguarde reiniciar e teste novamente com `docker ps`.
 
 **Passo 6:** Explore a estrutura do projeto
 
@@ -372,6 +386,8 @@ Você verá:
 - `requirements.txt` - Dependências Python
 - `data/` - Diretório com datasets de exemplo
 
+**Pergunta de reflexão:** por que é importante validar o ambiente antes de analisar os scripts? Pense em quais erros seriam causados por falta de dependências, por ausência do dataset ou por problemas de permissão no Docker.
+
 ### ✅ Checkpoint 3.1
 
 Verifique:
@@ -379,7 +395,11 @@ Verifique:
 - [ ] Fork do repositório foi criado com sucesso
 - [ ] Repositório foi clonado no Codespaces
 - [ ] Python 3.x está instalado
+- [ ] Java está instalado
+- [ ] Dependências Python foram instaladas pelo `init-repo.sh`
+- [ ] Dados de exemplo foram gerados
 - [ ] Docker está disponível
+- [ ] `docker ps` executa sem erro de permissão
 - [ ] Todos os arquivos da aplicação estão presentes
 - [ ] Você consegue visualizar os scripts Python
 
@@ -389,7 +409,7 @@ Verifique:
 
 ### 4.1 Explorando a Estrutura do Projeto
 
-O repositório já contém todos os scripts necessários. Vamos entender cada componente:
+O repositório já contém todos os scripts necessários. Nesta parte, você vai executar primeiro um exemplo pequeno e depois uma análise de negócio completa. A intenção é observar como os conceitos da Parte 1 aparecem em código real.
 
 ```bash
 cd pyspark_app
@@ -415,7 +435,7 @@ pyspark_app/
 
 ### 4.2 Entendendo o Dataset
 
-Primeiro, vamos gerar dados de exemplo:
+Se você já executou `./init-repo.sh`, os dados de exemplo já foram criados. Caso queira recriar os arquivos, execute:
 
 ```bash
 python3 data_generator.py
@@ -426,6 +446,11 @@ Visualize o conteúdo:
 ```bash
 head -20 data/sales_data.csv
 ```
+
+Observe:
+- Quais colunas representam dimensões de análise, como categoria e região?
+- Quais colunas permitem calcular métricas, como quantidade, preço e receita?
+- Cada linha representa qual evento de negócio?
 
 ### 4.3 Exemplo Simples: Word Count com PySpark
 
@@ -446,6 +471,8 @@ python3 spark_word_count.py
 2. Lê um arquivo de texto
 3. Aplica transformações (split, flatMap, map, reduceByKey)
 4. Executa uma ação (collect/show)
+
+**Critério de sucesso:** o terminal deve exibir rankings de palavras e o plano de execução do Spark. Use essa saída para identificar onde aparecem transformações, ações e lazy evaluation.
 
 ### 4.4 Análise de Vendas - Parte 1: Carregamento e Exploração
 
@@ -510,6 +537,9 @@ Observe a saída:
 - Estatísticas descritivas
 - Resultados de cada análise
 - Métricas de performance
+- Diretórios criados em `data/output/`
+
+**Pergunta de reflexão:** quais análises exigem apenas agregação? Quais poderiam exigir join, janela temporal ou cache se o volume de dados fosse maior?
 
 ### ✅ Checkpoint 4.1
 
@@ -541,29 +571,15 @@ cat Dockerfile
 
 ### 5.2 Construindo a Imagem Docker
 
-**⚠️ Resolução do Erro de Permissão**
+Antes do build, confirme que o Docker está acessível:
 
-Se você receber o erro:
-```
-ERROR: permission denied while trying to connect to the Docker daemon socket
-```
-
-**Causa**: No GitHub Codespaces, o usuário precisa estar no grupo `docker` para acessar o daemon.
-
-**Solução (execute uma vez)**:
 ```bash
-# Adicione seu usuário ao grupo docker
-sudo usermod -aG docker $USER && newgrp docker
-
-# Verifique se funcionou
 docker ps
 ```
 
-Se ainda houver problema, reinicie o Codespace (Menu ... → Restart Codespace).
+Se houver erro de permissão, volte ao Apêndice A ou execute `bash setup-docker-permissions.sh` no diretório raiz do repositório.
 
----
-
-**Agora sim, construa a imagem:**
+Construa a imagem:
 
 ```bash
 # Navegar para o diretório correto
@@ -573,7 +589,7 @@ cd pyspark_app
 docker build -t pyspark-app:v1.0 .
 ```
 
-Aguarde o build (pode levar 3-5 minutos na primeira vez).
+Aguarde o build. Na primeira execução, ele pode levar alguns minutos porque o Codespaces precisa baixar camadas da imagem e dependências.
 
 **Verificar a imagem criada:**
 ```bash
@@ -587,9 +603,10 @@ docker images | grep pyspark-app
 docker run --rm \
   -v "$(pwd)/data:/app/data" \
   pyspark-app:v1.0 \
-  python spark_sales_analysis.py
+  python3 spark_sales_analysis.py
 ```
-***Se não voltar ao prompt, tecle [CRTL] +[C]***
+
+Critério de sucesso: a saída deve mostrar as mesmas análises da execução local e atualizar os resultados em `data/output/`.
 
 
 **Opção 2: Executar word count**
@@ -597,7 +614,7 @@ docker run --rm \
 docker run --rm \
   -v "$(pwd)/data:/app/data" \
   pyspark-app:v1.0 \
-  python spark_word_count.py
+  python3 spark_word_count.py
 ```
 
 
@@ -607,14 +624,18 @@ Para orquestração mais simples, use Docker Compose:
 
 ```bash
 # Análise de vendas
-docker-compose up sales-analysis
+docker compose up sales-analysis
 
 # Word count
-docker-compose up word-count
+docker compose up word-count
 
 # PySpark Shell interativo
-docker-compose up pyspark-shell
+docker compose up pyspark-shell
 ```
+
+Se o comando `docker compose` não estiver disponível no seu Codespace, use `docker-compose` nos três comandos acima.
+
+Para encerrar um serviço interativo que não voltou ao prompt, pressione `Ctrl+C`.
 
 ### ✅ Checkpoint 5.1
 
@@ -675,7 +696,7 @@ Capture e envie os seguintes screenshots na tarefa do Teams:
 - Screenshot mostrando a análise de vendas executando dentro do container Docker
 
 **13. Docker Compose**
-- Screenshot mostrando a execução com `docker-compose up`
+- Screenshot mostrando a execução com `docker compose up sales-analysis`
 
 ### 6.3 Orientações para os Screenshots
 
@@ -710,14 +731,14 @@ Antes de submeter, verifique:
 
 ### 6.6 Dúvidas Frequentes
 
-**P: Preciso publicar a imagem no Docker Hub?**  
-R: Não é obrigatório para esta entrega. Basta ter evidências de que construiu e executou localmente.
+**P: Preciso publicar a imagem Docker em algum registry?**  
+R: Não. Para esta entrega, basta ter evidências de que a imagem foi construída e executada no Codespaces.
 
 **P: O que fazer se meu Codespaces expirar?**  
 R: Você pode recriar o Codespace do seu fork. Os arquivos estarão lá se você fez commit.
 
 **P: Posso trabalhar localmente ao invés de usar Codespaces?**  
-R: Sim, desde que consiga executar todas as partes e gerar as evidências.
+R: Para esta atividade, use Codespaces como ambiente padrão. A execução local só deve ser usada se o professor autorizar, pois diferenças de sistema operacional, Docker, Java e permissões podem alterar os resultados.
 
 ---
 
@@ -766,7 +787,7 @@ R: Sim, desde que consiga executar todas as partes e gerar as evidências.
 
 ## Apêndice A: Troubleshooting
 
-### 🚨 Problema: "Permission denied" ao acessar Docker daemon (GITHUB CODESPACES)
+### Problema: "Permission denied" ao acessar Docker daemon no Codespaces
 
 Este é o problema **mais comum** ao executar o item 5.2 do roteiro no GitHub Codespaces.
 
@@ -779,7 +800,7 @@ dial unix /var/run/docker.sock: connect: permission denied
 
 **Causa**: O usuário não tem permissões para acessar o Docker daemon.
 
-**✅ Solução Rápida** (execute no terminal do Codespaces):
+**Solução rápida** (execute no terminal do Codespaces):
 ```bash
 sudo usermod -aG docker $USER && newgrp docker
 ```
@@ -794,13 +815,13 @@ docker ps
 2. Selecione **"Restart Codespace"**
 3. Aguarde reiniciar e teste novamente: `docker ps`
 
-**Solução Alternativa** - Use o script automático:
+**Solução alternativa**: use o script automático no diretório raiz do repositório:
 ```bash
 chmod +x setup-docker-permissions.sh
 bash setup-docker-permissions.sh
 ```
 
-**📄 Para mais detalhes**, consulte: `CODESPACES_SETUP.md`
+Se o erro persistir, reinicie o Codespace e teste novamente com `docker ps`.
 
 ---
 
@@ -811,8 +832,45 @@ bash setup-docker-permissions.sh
 # No Codespaces
 sudo apt-get update
 sudo apt-get install -y default-jdk
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+java -version
 ```
+
+Se você executou `./init-repo.sh`, essa verificação já foi feita pelo script.
+
+### Problema: "ModuleNotFoundError: No module named 'pyspark'"
+
+**Causa**: as dependências Python ainda não foram instaladas no Codespace.
+
+**Solução**:
+```bash
+./init-repo.sh
+```
+
+Ou, dentro de `pyspark_app`:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+### Problema: `data/sales_data.csv` não encontrado
+
+**Causa**: os dados sintéticos ainda não foram gerados ou foram apagados.
+
+**Solução**:
+```bash
+cd pyspark_app
+python3 data_generator.py
+```
+
+### Problema: `docker compose` não encontrado
+
+**Solução**: verifique se o comando legado está disponível:
+
+```bash
+docker-compose --version
+```
+
+Se estiver, substitua `docker compose` por `docker-compose` nos comandos da Parte 5.
 
 ### Problema: "Out of Memory"
 
@@ -836,12 +894,14 @@ chmod +x *.py
 
 **Solução**:
 ```bash
-# Limpe cache do Docker
-docker system prune -a
+# Limpe recursos não utilizados do Docker
+docker system prune
 
 # Rebuild sem cache
 docker build --no-cache -t pyspark-app:v1.0 .
 ```
+
+Use `docker system prune -a` apenas se o professor orientar, pois ele remove mais camadas e imagens do cache, deixando builds futuros mais lentos.
 
 ---
 

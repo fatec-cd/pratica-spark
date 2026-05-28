@@ -99,5 +99,5 @@ Write-Host "   3. Execute: python3 spark_sales_analysis.py" -ForegroundColor Whi
 Write-Host ""
 Write-Host "🐳 Para usar Docker:" -ForegroundColor Cyan
 Write-Host "   docker build -t pyspark-app:v1.0 ." -ForegroundColor White
-Write-Host "   docker-compose up sales-analysis" -ForegroundColor White
+Write-Host "   docker compose up sales-analysis" -ForegroundColor White
 Write-Host ""
