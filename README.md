@@ -47,6 +47,8 @@ Voce usara:
 
 Siga as partes na ordem. Cada checkpoint indica o que deve estar funcionando antes de avancar. Se um comando falhar, consulte primeiro o **Apendice A: Troubleshooting**.
 
+Ao longo da execucao, sempre que aparecer um bloco **Evidencia**, faca a copia de tela naquele momento. Nao deixe para capturar tudo apenas no final, pois algumas saidas podem sair do historico do terminal ou ficar dificeis de localizar depois.
+
 Ao longo da atividade, procure diferenciar tres camadas:
 
 1. **Conceito**: o que Spark faz e por que faz dessa forma
@@ -289,12 +291,16 @@ Verifique:
 3. Selecione sua conta como destino
 4. Aguarde a criacao do fork
 
+**Evidencia 1:** capture uma copia de tela mostrando seu fork do repositorio no GitHub.
+
 **Passo 3:** abra seu fork no GitHub Codespaces.
 
 1. No seu fork, clique em **Code**
 2. Selecione a aba **Codespaces**
 3. Clique em **Create codespace on main**
 4. Aguarde o ambiente carregar
+
+**Evidencia 2:** quando o Codespace abrir, capture uma copia de tela mostrando o editor com os arquivos do projeto.
 
 ### 3.2 Preparando dependencias e dados
 
@@ -309,6 +315,8 @@ Esse script verifica Python e Java, instala as dependencias Python e gera os dad
 
 Criterio de sucesso: ao final, o terminal deve informar que o setup foi concluido e que os dados de exemplo foram gerados.
 
+**Evidencia 4:** capture uma copia de tela do terminal mostrando o `./init-repo.sh` concluido com sucesso.
+
 ### 3.3 Verificando o ambiente
 
 Execute:
@@ -319,6 +327,8 @@ java -version
 python3 -m pip show pyspark
 ls -la pyspark_app/
 ```
+
+**Evidencia 3:** capture uma copia de tela mostrando a estrutura do projeto com `ls -la pyspark_app/`.
 
 Voce deve encontrar estes arquivos principais:
 
@@ -391,6 +401,8 @@ Visualize as primeiras linhas:
 head -20 data/sales_data.csv
 ```
 
+**Evidencia 5:** capture uma copia de tela mostrando a geracao dos dados ou a saida de `head -20 data/sales_data.csv`.
+
 Perguntas de observacao:
 
 - Quais colunas representam dimensoes, como categoria e regiao?
@@ -416,6 +428,10 @@ O script demonstra:
 6. Visualizacao do plano de execucao
 
 Criterio de sucesso: o terminal deve exibir rankings de palavras e o plano de execucao do Spark.
+
+**Evidencia 6:** capture uma copia de tela mostrando os resultados do Word Count.
+
+**Evidencia 7:** capture outra copia de tela mostrando o plano de execucao exibido pelo script. Se a saida ficar longa, role o terminal ate a secao do plano antes de capturar.
 
 ### 4.4 Analise de vendas: leitura e exploracao
 
@@ -477,6 +493,8 @@ Execute:
 python3 spark_sales_analysis.py
 ```
 
+Durante a execucao, acompanhe a saida no terminal e capture as evidencias assim que cada secao aparecer. Se alguma secao passar na tela, voce pode rolar o terminal ou executar novamente o script.
+
 Observe a saida:
 
 - Schema do DataFrame
@@ -487,6 +505,24 @@ Observe a saida:
 - Metricas e segmentacao de clientes
 - Tendencias temporais
 - Resultados salvos em `data/output/`
+
+**Evidencia 8:** capture a tela da secao que mostra o schema do DataFrame de vendas.
+
+**Evidencia 9:** capture a tela da secao de receita por categoria.
+
+**Evidencia 10:** capture a tela da secao de top produtos.
+
+**Evidencia 11:** capture a tela da secao de vendas por regiao.
+
+**Evidencia 12:** capture a tela da secao de metricas de clientes ou tendencias temporais.
+
+Depois que a analise terminar, confirme os diretorios de saida:
+
+```bash
+ls -la data/output/
+```
+
+**Evidencia 13:** capture uma copia de tela mostrando os diretorios criados em `data/output/`.
 
 Perguntas de reflexao:
 
@@ -517,7 +553,7 @@ Para comprovar a conclusao desta atividade pratica, entregue screenshots das exe
 
 ### 5.2 Lista de screenshots obrigatorios
 
-Capture e envie os seguintes screenshots:
+Use a lista abaixo como checklist final. As copias de tela devem ter sido capturadas durante as etapas indicadas no roteiro.
 
 1. **Fork do repositorio**: screenshot mostrando seu fork do repositorio no GitHub
 2. **Codespaces em execucao**: screenshot do GitHub Codespaces aberto com os arquivos do projeto
