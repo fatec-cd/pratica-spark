@@ -528,6 +528,32 @@ ls -la data/output/
 
 **Evidencia 13:** capture uma copia de tela mostrando os diretorios criados em `data/output/`.
 
+### 4.7 Desafio opcional desejavel: criando uma nova analise
+
+Esta etapa e opcional, mas altamente recomendada. Ate aqui voce executou e observou analises prontas. Agora voce deve modificar o codigo para responder a uma nova pergunta de negocio.
+
+Pergunta do desafio:
+
+> Qual e a receita total de cada categoria em cada regiao?
+
+Objetivo esperado: ao executar `python3 spark_sales_analysis.py`, o terminal deve exibir uma nova secao chamada `ANALISE EXTRA: RECEITA POR REGIAO E CATEGORIA`, com as colunas `region`, `category`, `total_revenue`, `total_quantity` e `num_transactions`. O resultado tambem deve ser salvo em `data/output/revenue_by_region_category/`.
+
+Para realizar o desafio:
+
+1. Abra `spark_sales_analysis.py` no editor do Codespaces.
+2. Crie uma nova funcao depois de `analysis_sales_by_region(df)`.
+3. Use `groupBy("region", "category")` para agrupar os dados.
+4. Calcule receita total, quantidade total e numero de transacoes.
+5. Ordene por `region` e por maior receita dentro de cada regiao.
+6. Salve o resultado em `data/output/revenue_by_region_category`.
+7. Chame a nova funcao dentro de `main()`, depois da chamada de `analysis_sales_by_region(df)`.
+
+**Evidencia opcional 14:** capture uma copia de tela do editor mostrando a nova funcao criada no codigo.
+
+**Evidencia opcional 15:** capture uma copia de tela do terminal mostrando a nova secao `ANALISE EXTRA: RECEITA POR REGIAO E CATEGORIA`.
+
+**Evidencia opcional 16:** capture uma copia de tela mostrando o diretorio `data/output/revenue_by_region_category/` criado apos a execucao.
+
 Perguntas de reflexao:
 
 - Quais analises usam apenas agregacao?
@@ -535,6 +561,7 @@ Perguntas de reflexao:
 - Onde uma janela temporal seria util?
 - Por que `show()` dispara execucao?
 - Quais resultados seriam mais importantes para uma decisao comercial?
+- No desafio opcional, por que faz sentido agrupar por duas dimensoes ao mesmo tempo?
 
 ### Checkpoint 4.1
 
@@ -546,6 +573,7 @@ Verifique:
 - [ ] Resultados foram gravados em `data/output/`
 - [ ] Voce identificou transformacoes e acoes nos scripts
 - [ ] Voce consegue interpretar os resultados de negocio
+- [ ] Opcional: voce criou e executou a analise extra por regiao e categoria
 
 ---
 
@@ -573,7 +601,15 @@ Use a lista abaixo como checklist final. As copias de tela devem ter sido captur
 12. **Analise de vendas: metricas de clientes ou tendencias temporais**: screenshot mostrando uma dessas secoes da analise completa
 13. **Resultados gerados**: screenshot mostrando os diretorios criados em `data/output/`
 
-### 5.3 Orientacoes para os screenshots
+### 5.3 Evidencias opcionais desejaveis
+
+Se voce realizou o desafio opcional da secao 4.7, inclua tambem:
+
+14. **Codigo da analise extra**: screenshot do editor mostrando a funcao `analysis_revenue_by_region_category(df)` criada em `spark_sales_analysis.py`
+15. **Execucao da analise extra**: screenshot do terminal mostrando a secao `ANALISE EXTRA: RECEITA POR REGIAO E CATEGORIA`
+16. **Resultado da analise extra**: screenshot mostrando o diretorio `data/output/revenue_by_region_category/`
+
+### 5.4 Orientacoes para os screenshots
 
 Requisitos:
 
@@ -582,7 +618,7 @@ Requisitos:
 3. Use formato PNG ou JPG
 4. Nomeie arquivos de forma descritiva, por exemplo `01_fork_repositorio.png`
 
-### 5.4 Checklist pre-entrega
+### 5.5 Checklist pre-entrega
 
 Antes de submeter, verifique:
 
@@ -592,8 +628,9 @@ Antes de submeter, verifique:
 - [ ] Resultados foram gerados em `data/output/`
 - [ ] Voce consegue explicar ao menos duas transformacoes e duas acoes usadas
 - [ ] Voce consegue interpretar os principais resultados de negocio
+- [ ] Se realizou o desafio opcional, incluiu as evidencias 14, 15 e 16
 
-### 5.5 Duvidas frequentes
+### 5.6 Duvidas frequentes
 
 **P: Posso trabalhar localmente ao inves de usar Codespaces?**  
 R: Para esta atividade, use Codespaces como ambiente padrao. A execucao local so deve ser usada se o professor autorizar.
@@ -602,7 +639,7 @@ R: Para esta atividade, use Codespaces como ambiente padrao. A execucao local so
 R: Reabra ou recrie o Codespace a partir do seu fork. Faca commits para preservar alteracoes importantes.
 
 **P: Preciso alterar os scripts?**  
-R: Nao para concluir a atividade principal. Altere apenas se o professor pedir exercicios extras ou extensoes.
+R: Nao para concluir a atividade principal. A secao 4.7 traz um desafio opcional desejavel em que voce altera o codigo para criar uma nova analise.
 
 **P: Preciso usar cluster Spark real?**  
 R: Nao. Nesta atividade, Spark executa em modo local no Codespace para facilitar o foco nos conceitos.
