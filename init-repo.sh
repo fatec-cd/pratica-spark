@@ -35,15 +35,6 @@ else
     exit 1
 fi
 
-# Verifica Docker
-echo -n "   Docker: "
-if command -v docker &> /dev/null; then
-    DOCKER_VERSION=$(docker --version)
-    echo -e "${GREEN}✅ $DOCKER_VERSION${NC}"
-else
-    echo -e "${RED}❌ Não encontrado${NC}"
-fi
-
 # Verifica Java
 echo -n "   Java: "
 if command -v java &> /dev/null; then
@@ -97,10 +88,7 @@ echo "========================================"
 echo ""
 echo -e "${CYAN}📚 Próximos passos:${NC}"
 echo "   1. Explore o README.md do projeto"
-echo "   2. Execute: python3 spark_word_count.py"
-echo "   3. Execute: python3 spark_sales_analysis.py"
-echo ""
-echo -e "${CYAN}🐳 Para usar Docker:${NC}"
-echo "   docker build -t pyspark-app:v1.0 ."
-echo "   docker compose up sales-analysis"
+echo "   2. Execute: cd pyspark_app"
+echo "   3. Execute: python3 spark_word_count.py"
+echo "   4. Execute: python3 spark_sales_analysis.py"
 echo ""

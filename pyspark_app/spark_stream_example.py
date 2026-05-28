@@ -214,7 +214,7 @@ Este exemplo demonstra CONCEITOS de Spark Streaming.
 Para executar streaming real, você precisaria:
 
 1. Fonte de dados em streaming (Kafka, socket, files)
-2. Infraestrutura adequada (cluster, recursos)
+2. Ambiente com recursos suficientes para processamento continuo
 3. Caso de uso específico em tempo real
 
 O Spark Structured Streaming utiliza a MESMA API dos DataFrames,

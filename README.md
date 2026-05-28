@@ -1,415 +1,364 @@
-# Atividade Prática: PySpark com Python e Docker
+# Atividade Pratica: PySpark com Python
 
-## Informações Gerais
+## Informacoes Gerais
 
-**Público-alvo:** Alunos de graduação em Ciência de Dados  
-**Temática:** Infraestrutura para projetos de Big Data com Apache Spark  
-**Nível:** Intermediário
+**Publico-alvo:** Alunos de graduacao em Ciencia de Dados  
+**Tematica:** Processamento de dados com Apache Spark e PySpark  
+**Nivel:** Intermediario
 
 ---
 
 ## Objetivos de Aprendizagem
 
-Ao final desta atividade, você será capaz de:
+Ao final desta atividade, voce sera capaz de:
 
-1. Compreender a arquitetura e conceitos fundamentais do Apache Spark
-2. Implementar transformações e ações em PySpark
-3. Processar dados estruturados e não estruturados usando DataFrames e RDDs
-4. Containerizar aplicações Spark usando Docker
-5. Aplicar operações de análise de dados em larga escala
-6. Comparar o paradigma Spark com MapReduce tradicional
+1. Compreender a arquitetura e os conceitos fundamentais do Apache Spark
+2. Diferenciar RDDs, DataFrames, transformacoes e acoes
+3. Executar scripts PySpark em um ambiente padronizado no GitHub Codespaces
+4. Processar dados estruturados e nao estruturados usando PySpark
+5. Aplicar operacoes de analise de dados em um caso de e-commerce
+6. Interpretar resultados de negocio produzidos por consultas Spark
+7. Comparar o paradigma Spark com MapReduce tradicional
 
 ---
 
-## Pré-requisitos
+## Pre-requisitos
 
-- Conhecimento básico de Python
-- Familiaridade com linha de comando (terminal/bash)
-- Conceitos básicos de SQL (desejável)
+- Conhecimento basico de Python
+- Familiaridade com linha de comando
+- Conceitos basicos de SQL, desejavel
 - Conta no GitHub com acesso ao GitHub Codespaces
 - Navegador web moderno
 
 ---
 
-## Recursos Necessários
+## Recursos Necessarios
 
-Esta atividade foi revisada para ser executada integralmente no **GitHub Codespaces**, sem instalação local de Python, Java, Spark ou Docker.
+Esta atividade deve ser executada no **GitHub Codespaces**. O objetivo e manter a turma em um ambiente padronizado e reduzir problemas causados por diferencas entre sistemas operacionais.
+
+Voce usara:
 
 - **GitHub Codespaces**: ambiente de desenvolvimento na nuvem
-- **Docker dentro do Codespaces**: usado para construir e executar a aplicação containerizada
-- **Scripts do repositório**: usados para preparar dependências, dados e diretórios
-- **Dataset**: Dados de vendas de e-commerce para análise
+- **Python e PySpark**: execucao dos scripts de analise
+- **Scripts do repositorio**: preparacao das dependencias e dos dados
+- **Dataset sintetico**: dados de vendas de e-commerce
 
 ### Como usar este roteiro
 
-Siga as partes na ordem. Cada checkpoint indica o que deve estar funcionando antes de avançar. Se um comando falhar, consulte primeiro o **Apêndice A: Troubleshooting**, pois ele reúne os problemas mais comuns em Codespaces.
+Siga as partes na ordem. Cada checkpoint indica o que deve estar funcionando antes de avancar. Se um comando falhar, consulte primeiro o **Apendice A: Troubleshooting**.
 
-Ao longo da atividade, procure diferenciar três camadas:
+Ao longo da atividade, procure diferenciar tres camadas:
 
 1. **Conceito**: o que Spark faz e por que faz dessa forma
-2. **Implementação**: como o conceito aparece nos scripts PySpark
-3. **Infraestrutura**: como Docker e Codespaces tornam a execução reprodutível
+2. **Implementacao**: como o conceito aparece nos scripts PySpark
+3. **Interpretacao**: o que os resultados dizem sobre o problema de negocio
 
 ---
 
 ## Parte 1: Fundamentos do Apache Spark
 
-### 1.1 O que é Apache Spark?
+### 1.1 O que e Apache Spark?
 
-Apache Spark é um framework de processamento de dados distribuído de código aberto, projetado para ser **rápido**, **escalável** e **fácil de usar**. Foi desenvolvido na UC Berkeley em 2009 e se tornou um projeto Apache em 2013.
+Apache Spark e um framework de processamento de dados distribuido de codigo aberto, projetado para ser rapido, escalavel e facil de usar. Foi desenvolvido na UC Berkeley em 2009 e se tornou um projeto Apache em 2013.
 
-#### Principais Características:
+Principais caracteristicas:
 
-- **Velocidade**: Até 100x mais rápido que MapReduce (processamento em memória)
-- **Facilidade de uso**: APIs em Python, Scala, Java, R e SQL
-- **Generalidade**: Suporta batch, streaming, ML, grafos
-- **Execução**: Local, cluster (Standalone, YARN, Mesos, Kubernetes)
+- **Velocidade**: usa processamento em memoria e pode ser muito mais rapido que MapReduce em cargas iterativas
+- **Facilidade de uso**: oferece APIs em Python, Scala, Java, R e SQL
+- **Generalidade**: suporta batch, streaming, machine learning e processamento de grafos
+- **Flexibilidade**: pode executar localmente ou em clusters gerenciados
 
 ### 1.2 Arquitetura do Spark
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      SPARK APPLICATION                      │
-│                                                             │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              DRIVER PROGRAM                          │   │
-│  │  • SparkContext/SparkSession                         │   │
-│  │  • Converte programa em tarefas                      │   │
-│  │  • Agenda tarefas nos executors                      │   │
-│  │  • Monitora execução                                 │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                           │                                 │
-│                           ▼                                 │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │              CLUSTER MANAGER                           │ │
-│  │  • Standalone / YARN / Mesos / Kubernetes              │ │
-│  │  • Gerencia recursos do cluster                        │ │
-│  └────────────────────────────────────────────────────────┘ │
-│                           │                                 │
-│         ┌─────────────────┼─────────────────┐               │
-│         ▼                 ▼                 ▼               │
-│  ┌───────────┐     ┌───────────┐     ┌───────────┐          │
-│  │ EXECUTOR  │     │ EXECUTOR  │     │ EXECUTOR  │          │
-│  │ ┌───────┐ │     │ ┌───────┐ │     │ ┌───────┐ │          │
-│  │ │ Task  │ │     │ │ Task  │ │     │ │ Task  │ │          │
-│  │ ├───────┤ │     │ ├───────┤ │     │ ├───────┤ │          │
-│  │ │ Task  │ │     │ │ Task  │ │     │ │ Task  │ │          │
-│  │ └───────┘ │     │ └───────┘ │     │ └───────┘ │          │
-│  │  Cache    │     │  Cache    │     │  Cache    │          │
-│  └───────────┘     └───────────┘     └───────────┘          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```text
+SPARK APPLICATION
+|
++-- DRIVER PROGRAM
+|   +-- SparkSession / SparkContext
+|   +-- Converte o programa em tarefas
+|   +-- Agenda e monitora a execucao
+|
++-- CLUSTER MANAGER
+|   +-- Gerencia recursos disponiveis
+|
++-- EXECUTORS
+    +-- Executam tasks
+    +-- Mantem dados em cache quando necessario
+    +-- Enviam resultados ao driver
 ```
 
-#### Componentes da Arquitetura:
+Componentes da arquitetura:
 
-1. **Driver Program**:
-   - Executa a função `main()` da aplicação
-   - Cria o SparkContext/SparkSession
-   - Converte o código em um DAG (Directed Acyclic Graph)
-   - Divide o DAG em stages e tasks
-   - Agenda tasks para execução
+1. **Driver Program**
+   - Executa a funcao principal da aplicacao
+   - Cria a SparkSession ou o SparkContext
+   - Converte o codigo em um DAG, ou grafo aciclico direcionado
+   - Divide o trabalho em stages e tasks
 
-2. **Cluster Manager**:
-   - Gerencia recursos do cluster
-   - Aloca recursos para a aplicação
-   - Tipos: Standalone, YARN, Mesos, Kubernetes
+2. **Cluster Manager**
+   - Gerencia recursos para a aplicacao Spark
+   - Pode ser Standalone, YARN, Mesos ou Kubernetes em ambientes de cluster
 
-3. **Executors**:
+3. **Executors**
    - Processos que executam as tasks
-   - Armazenam dados em cache/memória
-   - Enviam resultados ao driver
+   - Armazenam dados em cache ou memoria
+   - Enviam resultados parciais ao driver
 
-4. **Tasks**:
-   - Menor unidade de trabalho
-   - Enviadas aos executors
-   - Processam partições de dados
+4. **Tasks**
+   - Menor unidade de trabalho executada pelo Spark
+   - Processam particoes dos dados
 
-### 1.3 Conceitos Fundamentais
+Nesta atividade, os scripts usam `local[*]`, ou seja, executam Spark no proprio Codespace usando os nucleos disponiveis no ambiente.
 
-#### RDD (Resilient Distributed Dataset)
+### 1.3 RDDs
 
-RDD é a abstração fundamental do Spark - uma coleção distribuída e imutável de objetos.
+RDD, ou Resilient Distributed Dataset, e uma colecao distribuida e imutavel de objetos.
 
-**Características:**
-- **Resiliente**: Recupera-se de falhas automaticamente
-- **Distribuído**: Dados particionados através do cluster
-- **Dataset**: Coleção de dados
+Caracteristicas:
 
-**Criação de RDD:**
+- **Resiliente**: pode ser reconstruido em caso de falha
+- **Distribuido**: os dados podem ser particionados
+- **Imutavel**: transformacoes criam novos RDDs
+
+Exemplos:
+
 ```python
-# A partir de uma coleção
+# A partir de uma colecao
 rdd = spark.sparkContext.parallelize([1, 2, 3, 4, 5])
 
 # A partir de arquivo
 rdd = spark.sparkContext.textFile("data/input.txt")
 ```
 
-#### DataFrames
+### 1.4 DataFrames
 
-DataFrames são coleções distribuídas de dados organizados em colunas nomeadas (similar a tabelas SQL ou DataFrames do pandas).
+DataFrames sao colecoes distribuidas organizadas em colunas nomeadas, semelhantes a tabelas SQL ou DataFrames do pandas.
 
-**Vantagens:**
-- Otimização automática (Catalyst Optimizer)
+Vantagens:
+
+- Otimizacao automatica pelo Catalyst Optimizer
 - Suporte a SQL
-- Schema definido
-- Melhor performance que RDDs
+- Schema estruturado
+- API de alto nivel
 
-**Criação de DataFrame:**
+Exemplos:
+
 ```python
 # A partir de arquivo CSV
-df = spark.read.csv("data/sales.csv", header=True, inferSchema=True)
+df = spark.read.csv("data/sales_data.csv", header=True, inferSchema=True)
 
-# A partir de dados em memória
-data = [(1, "João", 1000), (2, "Maria", 1500)]
+# A partir de dados em memoria
+data = [(1, "Joao", 1000), (2, "Maria", 1500)]
 df = spark.createDataFrame(data, ["id", "nome", "salario"])
 ```
 
-#### Transformações vs Ações
+### 1.5 Transformacoes vs acoes
 
-**Transformações** (Lazy - não executam imediatamente):
-- `map()`, `filter()`, `groupBy()`, `join()`, `select()`, `where()`
-- Criam um novo RDD/DataFrame
-- Exemplo: `df.filter(df.age > 18)`
+**Transformacoes** criam novos RDDs ou DataFrames e sao avaliadas de forma preguicosa.
 
-**Ações** (Eager - disparam execução):
-- `count()`, `collect()`, `first()`, `show()`, `save()`
-- Retornam valores ao driver
-- Exemplo: `df.count()`
+Exemplos:
 
-### 1.4 Execução Lazy (Lazy Evaluation)
+- `map()`
+- `filter()`
+- `select()`
+- `where()`
+- `groupBy()`
+- `join()`
 
-Spark utiliza **avaliação preguiçosa**: transformações não são executadas imediatamente.
+**Acoes** disparam a execucao do plano construido pelo Spark.
 
-**Fluxo de Execução:**
+Exemplos:
+
+- `count()`
+- `collect()`
+- `first()`
+- `show()`
+- `write.csv()`
+
+### 1.6 Lazy evaluation
+
+Spark usa avaliacao preguicosa: transformacoes nao sao executadas imediatamente. Primeiro, Spark monta um plano. A execucao acontece quando uma acao e chamada.
+
+Fluxo simplificado:
+
+```text
+Codigo -> DAG -> Logical Plan -> Physical Plan -> Execucao
 ```
-Código → DAG → Logical Plan → Physical Plan → Execução
-```
 
-1. **DAG Creation**: Spark constrói um grafo de dependências
-2. **Logical Plan**: Otimizações lógicas (Catalyst)
-3. **Physical Plan**: Escolha do melhor plano físico
-4. **Execution**: Tasks são executadas nos executors
+Exemplo:
 
-**Exemplo:**
 ```python
-# Nada é executado aqui
-df_filtered = df.filter(df.age > 18)
-df_selected = df_filtered.select("name", "age")
+# Nada e executado ainda
+df_filtered = df.filter(df.price > 100)
+df_selected = df_filtered.select("product_name", "price")
 
-# Somente aqui a execução acontece
-result = df_selected.count()  # Ação dispara o processamento
+# A execucao acontece aqui
+df_selected.count()
 ```
 
-### 1.5 Spark vs MapReduce
+### 1.7 Spark vs MapReduce
 
-| Característica | MapReduce | Spark |
-|---------------|-----------|-------|
-| **Velocidade** | Mais lento (disco) | Até 100x mais rápido (memória) |
-| **Facilidade** | Complexo (Java) | Simples (Python, Scala, SQL) |
-| **Processamento** | Batch apenas | Batch, Streaming, ML, Grafos |
-| **Iterações** | Lento (I/O disco) | Rápido (cache em memória) |
-| **APIs** | Baixo nível | Alto nível (DataFrames, SQL) |
-| **Uso** | Hadoop específico | Multi-plataforma |
+| Caracteristica | MapReduce | Spark |
+| --- | --- | --- |
+| Velocidade | Mais lento em tarefas iterativas | Mais rapido por usar memoria e otimizacoes |
+| Facilidade | API mais verbosa | APIs em Python, SQL e DataFrames |
+| Processamento | Principalmente batch | Batch, streaming, ML e grafos |
+| Iteracoes | Depende muito de I/O em disco | Pode reutilizar dados em memoria |
+| Nivel da API | Baixo nivel | Alto nivel |
 
-### ✅ Checkpoint 1.1
+### Checkpoint 1.1
 
-Antes de prosseguir, responda:
+Antes de prosseguir, confirme:
 
-- [ ] Você compreende a diferença entre Driver e Executor?
-- [ ] Você entende o que são RDDs e DataFrames?
-- [ ] Você sabe a diferença entre Transformações e Ações?
-- [ ] Você compreende o conceito de Lazy Evaluation?
-- [ ] Você consegue comparar Spark com MapReduce?
+- [ ] Voce compreende a diferenca entre driver e executor
+- [ ] Voce entende o que sao RDDs e DataFrames
+- [ ] Voce sabe diferenciar transformacoes e acoes
+- [ ] Voce compreende o conceito de lazy evaluation
+- [ ] Voce consegue comparar Spark com MapReduce
 
 ---
 
-## Importante: ambiente padronizado da atividade
+## Parte 2: Caso de Uso - Analise de Vendas de E-commerce
 
-O ambiente oficial desta atividade é o **GitHub Codespaces**. Isso reduz diferenças entre Windows, macOS e Linux e evita que a execução dependa de instalações locais.
+### 2.1 Contexto do problema
 
-Antes de iniciar a parte prática, confirme estes pontos no terminal do Codespaces:
+Uma empresa de e-commerce precisa analisar suas vendas para apoiar decisoes estrategicas.
 
-```bash
-python3 --version
-java -version
-docker --version
-docker compose version
-```
+Objetivos da analise:
 
-Se `docker compose version` não funcionar, teste:
-
-```bash
-docker-compose --version
-```
-
-Use o comando disponível no seu Codespace. No roteiro, o padrão será `docker compose`, que é o comando atual do Docker Compose.
-
-### Situações que podem prejudicar a execução
-
-| Situação | Como prevenir ou corrigir |
-|---|---|
-| Dependências Python ausentes | Execute `./init-repo.sh` antes da Parte 4 |
-| Erro de permissão no Docker | Execute `bash setup-docker-permissions.sh` ou reinicie o Codespace |
-| Dataset não encontrado | Execute `python3 data_generator.py` dentro de `pyspark_app` |
-| Comando `docker-compose` indisponível | Use `docker compose` |
-| Build Docker lento na primeira execução | Aguarde o download das camadas; isso é esperado |
-| Codespace parado ou expirado | Reabra o Codespace pelo GitHub; faça commits para preservar alterações |
-
-**Para detalhes sobre volumes e permissões**, consulte [pyspark_app/PERMISSIONS_GUIDE.md](pyspark_app/PERMISSIONS_GUIDE.md).
-
----
-
-## Parte 2: Caso de Uso - Análise de Vendas de E-commerce
-
-### 2.1 Contexto do Problema
-
-**Cenário**: Uma empresa de e-commerce precisa analisar suas vendas para tomar decisões estratégicas.
-
-**Objetivos da Análise**:
 1. Calcular receita total por categoria de produto
 2. Identificar os produtos mais vendidos
-3. Analisar padrões de vendas por região
-4. Calcular ticket médio por cliente
-5. Identificar tendências temporais de vendas
+3. Analisar padroes de vendas por regiao
+4. Calcular metricas por cliente
+5. Identificar tendencias temporais de vendas
+6. Avaliar a performance dos produtos
 
-**Dataset**: `sales_data.csv`
+Dataset principal: `sales_data.csv`
 
-**Estrutura dos dados:**
+Estrutura dos dados:
+
 ```csv
 transaction_id,date,customer_id,product_id,product_name,category,quantity,price,region
-TX001,2024-01-15,C101,P501,Notebook,Eletrônicos,1,2500.00,Sudeste
-TX002,2024-01-15,C102,P502,Mouse,Eletrônicos,2,45.00,Sul
-TX003,2024-01-16,C103,P503,Livro,Livros,3,35.00,Nordeste
-...
+TX001,2024-01-15,C101,P501,Notebook,Electronics,1,2500.00,Southeast
+TX002,2024-01-15,C102,P502,Mouse,Electronics,2,45.00,South
+TX003,2024-01-16,C103,P503,Book,Books,3,35.00,Northeast
 ```
 
-**Campos:**
-- `transaction_id`: ID único da transação
-- `date`: Data da venda
-- `customer_id`: ID do cliente
-- `product_id`: ID do produto
-- `product_name`: Nome do produto
-- `category`: Categoria do produto
-- `quantity`: Quantidade vendida
-- `price`: Preço unitário
-- `region`: Região da venda
+Campos:
 
-### 2.2 Análises a Realizar
+- `transaction_id`: identificador unico da transacao
+- `date`: data da venda
+- `customer_id`: identificador do cliente
+- `product_id`: identificador do produto
+- `product_name`: nome do produto
+- `category`: categoria do produto
+- `quantity`: quantidade vendida
+- `price`: preco unitario
+- `region`: regiao da venda
 
-#### Análise 1: Receita Total por Categoria
-Calcular a receita total (quantidade × preço) agrupada por categoria.
+### 2.2 Analises a realizar
 
-#### Análise 2: Top 10 Produtos Mais Vendidos
-Identificar os 10 produtos com maior volume de vendas.
+1. **Receita por categoria**: calcula `quantity * price` e agrupa por categoria
+2. **Top 10 produtos**: identifica produtos com maior quantidade vendida
+3. **Vendas por regiao**: compara receita e volume por localidade
+4. **Metricas de clientes**: calcula gastos, ticket medio e segmentacao
+5. **Analise temporal**: observa tendencias ao longo do tempo
+6. **Performance de produtos**: combina volume, receita e desempenho por item
 
-#### Análise 3: Vendas por Região
-Analisar a distribuição de vendas entre as regiões do Brasil.
-
-#### Análise 4: Ticket Médio por Cliente
-Calcular o valor médio gasto por cada cliente.
-
-#### Análise 5: Análise Temporal
-Identificar tendências de vendas ao longo do tempo (diária/mensal).
-
-### ✅ Checkpoint 2.1
+### Checkpoint 2.1
 
 Verifique:
 
-- [ ] Você compreende o contexto do problema de negócio?
-- [ ] Você entende a estrutura dos dados?
-- [ ] Você sabe quais análises precisam ser realizadas?
-- [ ] Você consegue pensar em como o Spark pode ajudar?
+- [ ] Voce compreende o contexto do problema de negocio
+- [ ] Voce entende a estrutura dos dados
+- [ ] Voce sabe quais perguntas serao respondidas pelas analises
+- [ ] Voce consegue identificar colunas de dimensao e colunas de medida
 
 ---
 
-## Parte 3: Configuração do Ambiente
+## Parte 3: Configuracao do Ambiente
 
-### 3.1 Fazendo Fork e Clonando o Repositório no GitHub Codespaces
+### 3.1 Criando o ambiente no GitHub Codespaces
 
-**Passo 1:** Acesse https://github.com e faça login
+**Passo 1:** acesse o GitHub e faca login.
 
-**Passo 2:** Faça um fork do repositório do laboratório
+**Passo 2:** faca um fork do repositorio do laboratorio.
 
-1. Acesse o repositório original fornecido pelo professor
-2. Clique no botão "Fork" no canto superior direito
-3. Selecione sua conta como destino do fork
-4. Aguarde a criação do fork (alguns segundos)
+1. Acesse o repositorio original fornecido pelo professor
+2. Clique em **Fork**
+3. Selecione sua conta como destino
+4. Aguarde a criacao do fork
 
-**Passo 3:** Clone seu fork usando GitHub Codespaces
+**Passo 3:** abra seu fork no GitHub Codespaces.
 
-1. No seu fork, clique no botão verde "Code"
-2. Selecione a aba "Codespaces"
-3. Clique em "Create codespace on main"
-4. Aguarde o ambiente carregar (pode levar 2-3 minutos - Spark requer mais recursos)
+1. No seu fork, clique em **Code**
+2. Selecione a aba **Codespaces**
+3. Clique em **Create codespace on main**
+4. Aguarde o ambiente carregar
 
-**Passo 4:** Prepare o ambiente do laboratório
+### 3.2 Preparando dependencias e dados
 
-No terminal do Codespaces, execute o script de preparação. Ele verifica Python, Docker e Java, instala as dependências Python e gera os dados iniciais.
+No terminal do Codespaces, execute:
 
 ```bash
-chmod +x init-repo.sh setup-docker-permissions.sh
+chmod +x init-repo.sh
 ./init-repo.sh
 ```
 
-Critério de sucesso: ao final, o terminal deve mostrar que o setup foi concluído e que os dados de exemplo foram gerados.
+Esse script verifica Python e Java, instala as dependencias Python e gera os dados iniciais.
 
-**Passo 5:** Verifique o ambiente antes de avançar
+Criterio de sucesso: ao final, o terminal deve informar que o setup foi concluido e que os dados de exemplo foram gerados.
+
+### 3.3 Verificando o ambiente
+
+Execute:
 
 ```bash
 python3 --version
 java -version
-docker --version
-docker ps
-docker compose version
-```
-
-Se `docker ps` retornar erro de permissão, execute:
-
-```bash
-bash setup-docker-permissions.sh
-```
-
-Se ainda houver problema, reinicie o Codespace: clique nos três pontos `...`, selecione **Restart Codespace**, aguarde reiniciar e teste novamente com `docker ps`.
-
-**Passo 6:** Explore a estrutura do projeto
-
-```bash
+python3 -m pip show pyspark
 ls -la pyspark_app/
 ```
 
-Você verá:
-- `spark_sales_analysis.py` - Script principal de análise
-- `spark_word_count.py` - Exemplo simples (Word Count)
-- `data_generator.py` - Gerador de dados de vendas
-- `Dockerfile` - Configuração do container
-- `requirements.txt` - Dependências Python
-- `data/` - Diretório com datasets de exemplo
+Voce deve encontrar estes arquivos principais:
 
-**Pergunta de reflexão:** por que é importante validar o ambiente antes de analisar os scripts? Pense em quais erros seriam causados por falta de dependências, por ausência do dataset ou por problemas de permissão no Docker.
+- `data_generator.py`: gera os dados sinteticos
+- `spark_word_count.py`: exemplo introdutorio com texto
+- `spark_sales_analysis.py`: analise completa de vendas
+- `spark_stream_example.py`: exemplo complementar de streaming
+- `requirements.txt`: dependencias Python
+- `data/`: diretorio de datasets e resultados
 
-### ✅ Checkpoint 3.1
+### Situacoes que podem prejudicar a execucao
+
+| Situacao | Como prevenir ou corrigir |
+| --- | --- |
+| Dependencias Python ausentes | Execute `./init-repo.sh` na raiz do repositorio |
+| Java ausente | Execute `sudo apt-get install -y default-jdk` |
+| Dataset ausente | Execute `python3 data_generator.py` dentro de `pyspark_app` |
+| Comando executado no diretorio errado | Entre em `pyspark_app` antes de rodar os scripts |
+| Codespace parado ou expirado | Reabra o Codespace pelo GitHub; faca commits para preservar alteracoes |
+| Memoria insuficiente | Reduza configuracoes de memoria nos scripts ou reinicie o Codespace |
+
+### Checkpoint 3.1
 
 Verifique:
 
-- [ ] Fork do repositório foi criado com sucesso
-- [ ] Repositório foi clonado no Codespaces
-- [ ] Python 3.x está instalado
-- [ ] Java está instalado
-- [ ] Dependências Python foram instaladas pelo `init-repo.sh`
+- [ ] Fork do repositorio foi criado com sucesso
+- [ ] Codespace foi aberto a partir do seu fork
+- [ ] Python 3 esta instalado
+- [ ] Java esta instalado
+- [ ] PySpark esta instalado
 - [ ] Dados de exemplo foram gerados
-- [ ] Docker está disponível
-- [ ] `docker ps` executa sem erro de permissão
-- [ ] Todos os arquivos da aplicação estão presentes
-- [ ] Você consegue visualizar os scripts Python
+- [ ] Arquivos da aplicacao estao presentes
 
 ---
 
-## Parte 4: Implementação com PySpark
+## Parte 4: Implementacao com PySpark
 
-### 4.1 Explorando a Estrutura do Projeto
+### 4.1 Explorando a estrutura do projeto
 
-O repositório já contém todos os scripts necessários. Nesta parte, você vai executar primeiro um exemplo pequeno e depois uma análise de negócio completa. A intenção é observar como os conceitos da Parte 1 aparecem em código real.
+Entre no diretorio da aplicacao:
 
 ```bash
 cd pyspark_app
@@ -418,430 +367,273 @@ ls -la
 
 Estrutura esperada:
 
-```
+```text
 pyspark_app/
-├── spark_sales_analysis.py    # Análise completa de vendas
-├── spark_word_count.py         # Exemplo básico
-├── data_generator.py           # Gera dados de teste
-├── spark_stream_example.py     # Exemplo de streaming
-├── Dockerfile                  # Imagem Docker com Spark
-├── requirements.txt            # Dependências
-├── docker-compose.yml          # Orquestração
-└── data/                       # Datasets
-    ├── sales_data.csv          # Dados de vendas
-    ├── products.csv            # Catálogo de produtos
-    └── input.txt               # Texto para word count
+|-- spark_sales_analysis.py    # Analise completa de vendas
+|-- spark_word_count.py        # Exemplo basico
+|-- data_generator.py          # Geracao de dados de teste
+|-- spark_stream_example.py    # Exemplo complementar de streaming
+|-- requirements.txt           # Dependencias Python
+`-- data/                      # Datasets e resultados
 ```
 
-### 4.2 Entendendo o Dataset
+### 4.2 Gerando e entendendo o dataset
 
-Se você já executou `./init-repo.sh`, os dados de exemplo já foram criados. Caso queira recriar os arquivos, execute:
+Se voce executou `./init-repo.sh`, os dados ja foram criados. Para recriar os arquivos, execute:
 
 ```bash
 python3 data_generator.py
 ```
 
-Visualize o conteúdo:
+Visualize as primeiras linhas:
 
 ```bash
 head -20 data/sales_data.csv
 ```
 
-Observe:
-- Quais colunas representam dimensões de análise, como categoria e região?
-- Quais colunas permitem calcular métricas, como quantidade, preço e receita?
-- Cada linha representa qual evento de negócio?
+Perguntas de observacao:
 
-### 4.3 Exemplo Simples: Word Count com PySpark
+- Quais colunas representam dimensoes, como categoria e regiao?
+- Quais colunas permitem calcular metricas, como quantidade, preco e receita?
+- Cada linha representa qual evento de negocio?
 
-Antes da análise completa, vamos executar um exemplo simples para entender os conceitos:
+### 4.3 Exemplo simples: Word Count com PySpark
+
+Antes da analise de vendas, execute um exemplo pequeno:
 
 ```bash
 cat spark_word_count.py
-```
-
-Execute o exemplo:
-
-```bash
 python3 spark_word_count.py
 ```
 
-**O que este script faz:**
-1. Cria uma SparkSession
-2. Lê um arquivo de texto
-3. Aplica transformações (split, flatMap, map, reduceByKey)
-4. Executa uma ação (collect/show)
+O script demonstra:
 
-**Critério de sucesso:** o terminal deve exibir rankings de palavras e o plano de execução do Spark. Use essa saída para identificar onde aparecem transformações, ações e lazy evaluation.
+1. Criacao de uma SparkSession
+2. Leitura de arquivo de texto
+3. Uso de RDDs, DataFrames e Spark SQL
+4. Aplicacao de transformacoes
+5. Execucao de acoes
+6. Visualizacao do plano de execucao
 
-### 4.4 Análise de Vendas - Parte 1: Carregamento e Exploração
+Criterio de sucesso: o terminal deve exibir rankings de palavras e o plano de execucao do Spark.
 
-Abra o arquivo `spark_sales_analysis.py` e analise o código:
+### 4.4 Analise de vendas: leitura e exploracao
+
+Abra o arquivo principal:
 
 ```bash
 cat spark_sales_analysis.py
 ```
 
-**Seção 1: Inicialização**
-- Cria SparkSession
-- Configura memória e cores
+Observe no codigo:
 
-**Seção 2: Carregamento de Dados**
-- Lê CSV com schema inference
-- Valida dados carregados
+- Criacao da SparkSession
+- Leitura do CSV com inferencia de schema
+- Conversao da coluna `date`
+- Criacao da coluna `revenue`
+- Impressao do schema e das primeiras linhas
 
-**Seção 3: Exploração Inicial**
-- Exibe schema
-- Mostra primeiras linhas
-- Calcula estatísticas
+### 4.5 Analise de vendas: transformacoes e agregacoes
 
-### 4.5 Análise de Vendas - Parte 2: Transformações e Agregações
+Exemplo de receita por categoria:
 
-**Análise Implementada:**
-
-1. **Receita por Categoria**
 ```python
-df.withColumn("revenue", col("quantity") * col("price"))
-  .groupBy("category")
-  .agg(sum("revenue").alias("total_revenue"))
-  .orderBy(desc("total_revenue"))
+df.groupBy("category") \
+    .agg(sum("revenue").alias("total_revenue")) \
+    .orderBy(desc("total_revenue"))
 ```
 
-2. **Top Produtos**
+Exemplo de top produtos:
+
 ```python
-df.groupBy("product_name")
-  .agg(sum("quantity").alias("total_sold"))
-  .orderBy(desc("total_sold"))
-  .limit(10)
+df.groupBy("product_name") \
+    .agg(sum("quantity").alias("total_sold")) \
+    .orderBy(desc("total_sold")) \
+    .limit(10)
 ```
 
-3. **Vendas por Região**
+Exemplo de vendas por regiao:
+
 ```python
-df.groupBy("region")
-  .agg(
-    count("*").alias("num_transactions"),
-    sum(col("quantity") * col("price")).alias("total_revenue")
-  )
+df.groupBy("region") \
+    .agg(
+        count("*").alias("num_transactions"),
+        sum("revenue").alias("total_revenue")
+    )
 ```
 
-### 4.6 Executando a Análise Completa
+Durante a leitura, tente marcar no codigo:
 
-Execute o script de análise:
+- Onde ha transformacoes
+- Onde ha acoes
+- Onde o resultado e persistido em `data/output/`
+- Onde aparecem decisoes de negocio, como segmentacao de clientes
+
+### 4.6 Executando a analise completa
+
+Execute:
 
 ```bash
 python3 spark_sales_analysis.py
 ```
 
-Observe a saída:
+Observe a saida:
+
 - Schema do DataFrame
-- Estatísticas descritivas
-- Resultados de cada análise
-- Métricas de performance
-- Diretórios criados em `data/output/`
+- Estatisticas descritivas
+- Receita por categoria
+- Top produtos
+- Vendas por regiao
+- Metricas e segmentacao de clientes
+- Tendencias temporais
+- Resultados salvos em `data/output/`
 
-**Pergunta de reflexão:** quais análises exigem apenas agregação? Quais poderiam exigir join, janela temporal ou cache se o volume de dados fosse maior?
+Perguntas de reflexao:
 
-### ✅ Checkpoint 4.1
+- Quais analises usam apenas agregacao?
+- Quais analises usam ordenacao ou limite?
+- Onde uma janela temporal seria util?
+- Por que `show()` dispara execucao?
+- Quais resultados seriam mais importantes para uma decisao comercial?
 
-Verifique:
-
-- [ ] Você conseguiu gerar os dados de vendas?
-- [ ] O exemplo de Word Count executou com sucesso?
-- [ ] A análise de vendas foi executada completamente?
-- [ ] Você compreende as transformações utilizadas?
-- [ ] Os resultados fazem sentido do ponto de vista de negócio?
-
----
-
-## Parte 5: Containerização com Docker
-
-### 5.1 Entendendo o Dockerfile
-
-Examine o Dockerfile:
-
-```bash
-cat Dockerfile
-```
-
-**Componentes:**
-- Imagem base com Spark e Python
-- Instalação de dependências
-- Configuração do ambiente Spark
-- Cópia dos scripts
-
-### 5.2 Construindo a Imagem Docker
-
-Antes do build, confirme que o Docker está acessível:
-
-```bash
-docker ps
-```
-
-Se houver erro de permissão, volte ao Apêndice A ou execute `bash setup-docker-permissions.sh` no diretório raiz do repositório.
-
-Construa a imagem:
-
-```bash
-# Navegar para o diretório correto
-cd pyspark_app
-
-# Construir a imagem
-docker build -t pyspark-app:v1.0 .
-```
-
-Aguarde o build. Na primeira execução, ele pode levar alguns minutos porque o Codespaces precisa baixar camadas da imagem e dependências.
-
-**Verificar a imagem criada:**
-```bash
-docker images | grep pyspark-app
-```
-
-### 5.3 Executando o Container
-
-**Opção 1: Executar análise de vendas**
-```bash
-docker run --rm \
-  -v "$(pwd)/data:/app/data" \
-  pyspark-app:v1.0 \
-  python3 spark_sales_analysis.py
-```
-
-Critério de sucesso: a saída deve mostrar as mesmas análises da execução local e atualizar os resultados em `data/output/`.
-
-
-**Opção 2: Executar word count**
-```bash
-docker run --rm \
-  -v "$(pwd)/data:/app/data" \
-  pyspark-app:v1.0 \
-  python3 spark_word_count.py
-```
-
-
-### 5.4 Docker Compose
-
-Para orquestração mais simples, use Docker Compose:
-
-```bash
-# Análise de vendas
-docker compose up sales-analysis
-
-# Word count
-docker compose up word-count
-
-# PySpark Shell interativo
-docker compose up pyspark-shell
-```
-
-Se o comando `docker compose` não estiver disponível no seu Codespace, use `docker-compose` nos três comandos acima.
-
-Para encerrar um serviço interativo que não voltou ao prompt, pressione `Ctrl+C`.
-
-### ✅ Checkpoint 5.1
+### Checkpoint 4.1
 
 Verifique:
 
-- [ ] A imagem Docker foi construída com sucesso?
-- [ ] Os containers executam sem erros?
-- [ ] Os volumes estão montados corretamente?
-- [ ] Você consegue acessar os resultados?
-- [ ] O Docker Compose está funcionando?
+- [ ] Dados de vendas foram gerados
+- [ ] Word Count executou com sucesso
+- [ ] Analise de vendas executou completamente
+- [ ] Resultados foram gravados em `data/output/`
+- [ ] Voce identificou transformacoes e acoes nos scripts
+- [ ] Voce consegue interpretar os resultados de negocio
 
 ---
 
-## Parte 6: Entregáveis da Atividade
+## Parte 5: Entregaveis da Atividade
 
-### 6.1 O que deve ser entregue
+### 5.1 O que deve ser entregue
 
-Para comprovar a conclusão desta atividade prática, você deverá entregar **screenshots** das execuções na tarefa do Microsoft Teams atribuída ao aluno.
+Para comprovar a conclusao desta atividade pratica, entregue screenshots das execucoes na tarefa indicada pelo professor.
 
-### 6.2 Lista de Screenshots Obrigatórios
+### 5.2 Lista de screenshots obrigatorios
 
-Capture e envie os seguintes screenshots na tarefa do Teams:
+Capture e envie os seguintes screenshots:
 
-**1. Fork do Repositório**
-- Screenshot mostrando seu fork do repositório no GitHub
+1. **Fork do repositorio**: screenshot mostrando seu fork do repositorio no GitHub
+2. **Codespaces em execucao**: screenshot do GitHub Codespaces aberto com os arquivos do projeto
+3. **Estrutura do projeto**: screenshot do terminal mostrando `ls -la pyspark_app/`
+4. **Setup concluido**: screenshot da execucao de `./init-repo.sh` concluida com sucesso
+5. **Geracao ou verificacao dos dados**: screenshot de `head -20 data/sales_data.csv` ou da execucao de `data_generator.py`
+6. **Execucao do Word Count**: screenshot da execucao de `spark_word_count.py` mostrando resultados
+7. **Plano de execucao do Word Count**: screenshot mostrando a parte do plano de execucao exibida pelo script
+8. **Analise de vendas: schema**: screenshot mostrando o schema do DataFrame de vendas
+9. **Analise de vendas: receita por categoria**: screenshot mostrando os resultados da receita por categoria
+10. **Analise de vendas: top produtos**: screenshot mostrando os produtos mais vendidos
+11. **Analise de vendas: vendas por regiao**: screenshot mostrando a distribuicao de vendas por regiao
+12. **Analise de vendas: metricas de clientes ou tendencias temporais**: screenshot mostrando uma dessas secoes da analise completa
+13. **Resultados gerados**: screenshot mostrando os diretorios criados em `data/output/`
 
-**2. Codespaces em Execução**
-- Screenshot do GitHub Codespaces aberto com os arquivos do projeto
+### 5.3 Orientacoes para os screenshots
 
-**3. Estrutura do Projeto**
-- Screenshot do terminal mostrando a estrutura de arquivos com `ls -la pyspark_app/`
+Requisitos:
 
-**4. Geração de Dados**
-- Screenshot da execução do `data_generator.py` mostrando a criação dos arquivos CSV
+1. Screenshots devem estar legiveis
+2. A saida relevante do comando deve estar visivel
+3. Use formato PNG ou JPG
+4. Nomeie arquivos de forma descritiva, por exemplo `01_fork_repositorio.png`
 
-**5. Execução do Word Count**
-- Screenshot da execução completa do `spark_word_count.py` mostrando os resultados
-
-**6. Análise de Vendas - Schema**
-- Screenshot mostrando o schema do DataFrame de vendas
-
-**7. Análise de Vendas - Receita por Categoria**
-- Screenshot mostrando os resultados da análise de receita por categoria
-
-**8. Análise de Vendas - Top 10 Produtos**
-- Screenshot mostrando os 10 produtos mais vendidos
-
-**9. Análise de Vendas - Vendas por Região**
-- Screenshot mostrando a distribuição de vendas por região
-
-**10. Docker Build**
-- Screenshot mostrando o build da imagem Docker com sucesso
-
-**11. Docker Images**
-- Screenshot do comando `docker images` mostrando a imagem `pyspark-app:v1.0` criada
-
-**12. Execução no Container**
-- Screenshot mostrando a análise de vendas executando dentro do container Docker
-
-**13. Docker Compose**
-- Screenshot mostrando a execução com `docker compose up sales-analysis`
-
-### 6.3 Orientações para os Screenshots
-
-**Requisitos para os screenshots:**
-
-1. **Qualidade**: Screenshots devem estar legíveis e em resolução adequada
-2. **Conteúdo completo**: Capture toda a saída relevante do comando/execução
-3. **Formato**: PNG ou JPG
-
-**Como capturar screenshots:**
-- Windows: `Windows + Shift + S`
-- Mac: `Cmd + Shift + 4`
-- Linux: `Print Screen` ou `Gnome Screenshot`
-
-### 6.4 Como Entregar
-
-1. Capture todos os 13 screenshots obrigatórios
-2. Nomeie os arquivos de forma descritiva (ex: `01_fork_repositorio.png`, `02_codespaces.png`, etc.)
-3. Envie todos os screenshots na **tarefa do Microsoft Teams** atribuída
-4. Certifique-se de que todos os screenshots estão legíveis antes de enviar
-
-### 6.5 Checklist Pré-Entrega
+### 5.4 Checklist pre-entrega
 
 Antes de submeter, verifique:
 
-- [ ] Todos os 13 screenshots obrigatórios foram capturados
-- [ ] Screenshots estão legíveis e mostram informações completas
-- [ ] Arquivos estão nomeados de forma clara
-- [ ] Todos os scripts executaram corretamente
-- [ ] A imagem Docker foi construída com sucesso
-- [ ] As análises produziram resultados coerentes
+- [ ] Todos os 13 screenshots obrigatorios foram capturados
+- [ ] Screenshots estao legiveis
+- [ ] Scripts executaram sem erro
+- [ ] Resultados foram gerados em `data/output/`
+- [ ] Voce consegue explicar ao menos duas transformacoes e duas acoes usadas
+- [ ] Voce consegue interpretar os principais resultados de negocio
 
-### 6.6 Dúvidas Frequentes
+### 5.5 Duvidas frequentes
 
-**P: Preciso publicar a imagem Docker em algum registry?**  
-R: Não. Para esta entrega, basta ter evidências de que a imagem foi construída e executada no Codespaces.
+**P: Posso trabalhar localmente ao inves de usar Codespaces?**  
+R: Para esta atividade, use Codespaces como ambiente padrao. A execucao local so deve ser usada se o professor autorizar.
 
-**P: O que fazer se meu Codespaces expirar?**  
-R: Você pode recriar o Codespace do seu fork. Os arquivos estarão lá se você fez commit.
+**P: O que fazer se meu Codespace expirar?**  
+R: Reabra ou recrie o Codespace a partir do seu fork. Faca commits para preservar alteracoes importantes.
 
-**P: Posso trabalhar localmente ao invés de usar Codespaces?**  
-R: Para esta atividade, use Codespaces como ambiente padrão. A execução local só deve ser usada se o professor autorizar, pois diferenças de sistema operacional, Docker, Java e permissões podem alterar os resultados.
+**P: Preciso alterar os scripts?**  
+R: Nao para concluir a atividade principal. Altere apenas se o professor pedir exercicios extras ou extensoes.
+
+**P: Preciso usar cluster Spark real?**  
+R: Nao. Nesta atividade, Spark executa em modo local no Codespace para facilitar o foco nos conceitos.
 
 ---
 
-## Parte 7: Recursos Adicionais e Próximos Passos
+## Parte 6: Recursos Adicionais e Proximos Passos
 
-### 7.1 Conceitos Avançados para Estudo
+### 6.1 Conceitos avancados para estudo
 
-1. **Spark SQL**: Queries SQL em DataFrames
-2. **Spark Streaming**: Processamento de dados em tempo real
-3. **Spark MLlib**: Machine Learning distribuído
-4. **GraphX**: Processamento de grafos
-5. **Delta Lake**: ACID transactions em Data Lakes
+1. Spark SQL
+2. Spark Streaming
+3. Spark MLlib
+4. GraphX
+5. Delta Lake
+6. Otimizacao de particionamento e cache
 
-### 7.2 Recursos de Aprendizagem
+### 6.2 Recursos de aprendizagem
 
-**Documentação Oficial**:
+Documentacao oficial:
+
 - [Apache Spark Documentation](https://spark.apache.org/docs/latest/)
 - [PySpark API Reference](https://spark.apache.org/docs/latest/api/python/)
+- [Spark SQL Guide](https://spark.apache.org/docs/latest/sql-programming-guide.html)
 
-**Cursos Online**:
+Cursos online:
+
 - [Databricks Academy](https://www.databricks.com/learn/training)
 - [Coursera - Big Data Specialization](https://www.coursera.org/specializations/big-data)
 
-**Livros**:
+Livros:
+
 - "Learning Spark" (O'Reilly)
 - "Spark: The Definitive Guide" (O'Reilly)
+- "High Performance Spark" (O'Reilly)
 
-**Comunidade**:
+Comunidade:
+
 - [Stack Overflow - Apache Spark](https://stackoverflow.com/questions/tagged/apache-spark)
 - [Spark User Mailing List](https://spark.apache.org/community.html)
 
-### 7.3 Próximos Passos
+### 6.3 Proximos passos
 
-1. **Deploy em Cluster**: Configure Spark em modo cluster (Standalone/YARN)
-2. **Integração com Cloud**: Use AWS EMR, Azure Databricks ou GCP Dataproc
-3. **Streaming**: Implemente processamento em tempo real com Kafka
-4. **Machine Learning**: Crie modelos preditivos com MLlib
-5. **Otimização**: Aprenda técnicas de tuning e particionamento
-
-### 7.4 Certificações
-
-- **Databricks Certified Associate Developer for Apache Spark**
-- **Cloudera Certified Spark and Hadoop Developer**
+1. Reexecutar as analises com filtros diferentes
+2. Criar novas metricas de cliente ou produto
+3. Comparar execucoes com diferentes numeros de particoes
+4. Explorar Spark SQL com views temporarias
+5. Implementar uma analise propria usando o mesmo dataset
 
 ---
 
-## Apêndice A: Troubleshooting
-
-### Problema: "Permission denied" ao acessar Docker daemon no Codespaces
-
-Este é o problema **mais comum** ao executar o item 5.2 do roteiro no GitHub Codespaces.
-
-**Erro completo**:
-```
-ERROR: permission denied while trying to connect to the Docker daemon socket at 
-unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": 
-dial unix /var/run/docker.sock: connect: permission denied
-```
-
-**Causa**: O usuário não tem permissões para acessar o Docker daemon.
-
-**Solução rápida** (execute no terminal do Codespaces):
-```bash
-sudo usermod -aG docker $USER && newgrp docker
-```
-
-**Teste se funcionou**:
-```bash
-docker ps
-```
-
-**Se ainda não funcionar**:
-1. Clique nos três pontos `...` no canto superior do Codespaces
-2. Selecione **"Restart Codespace"**
-3. Aguarde reiniciar e teste novamente: `docker ps`
-
-**Solução alternativa**: use o script automático no diretório raiz do repositório:
-```bash
-chmod +x setup-docker-permissions.sh
-bash setup-docker-permissions.sh
-```
-
-Se o erro persistir, reinicie o Codespace e teste novamente com `docker ps`.
-
----
+## Apendice A: Troubleshooting
 
 ### Problema: "Java not found"
 
-**Solução**:
+Solucao:
+
 ```bash
-# No Codespaces
 sudo apt-get update
 sudo apt-get install -y default-jdk
 java -version
 ```
 
-Se você executou `./init-repo.sh`, essa verificação já foi feita pelo script.
+Se voce executou `./init-repo.sh`, essa verificacao ja foi feita pelo script.
 
 ### Problema: "ModuleNotFoundError: No module named 'pyspark'"
 
-**Causa**: as dependências Python ainda não foram instaladas no Codespace.
+Causa provavel: as dependencias Python ainda nao foram instaladas.
 
-**Solução**:
+Solucao na raiz do repositorio:
+
 ```bash
 ./init-repo.sh
 ```
@@ -852,109 +644,110 @@ Ou, dentro de `pyspark_app`:
 python3 -m pip install -r requirements.txt
 ```
 
-### Problema: `data/sales_data.csv` não encontrado
+### Problema: `data/sales_data.csv` nao encontrado
 
-**Causa**: os dados sintéticos ainda não foram gerados ou foram apagados.
+Causa provavel: os dados sinteticos ainda nao foram gerados ou foram apagados.
 
-**Solução**:
+Solucao:
+
 ```bash
 cd pyspark_app
 python3 data_generator.py
 ```
 
-### Problema: `docker compose` não encontrado
+### Problema: comando executado no diretorio errado
 
-**Solução**: verifique se o comando legado está disponível:
+Se o script nao encontrar arquivos dentro de `data/`, confirme o diretorio atual:
 
 ```bash
-docker-compose --version
+pwd
+ls -la
 ```
 
-Se estiver, substitua `docker compose` por `docker-compose` nos comandos da Parte 5.
+Para executar os scripts, entre em:
+
+```bash
+cd pyspark_app
+```
 
 ### Problema: "Out of Memory"
 
-**Solução**:
+Solucao possivel: reduza configuracoes de memoria no script ou reinicie o Codespace. Para datasets pequenos desta atividade, o erro geralmente indica ambiente instavel ou configuracao alterada.
+
+Exemplo de configuracao mais conservadora:
+
 ```python
 spark = SparkSession.builder \
     .appName("SalesAnalysis") \
-    .config("spark.driver.memory", "2g") \
-    .config("spark.executor.memory", "2g") \
+    .master("local[*]") \
+    .config("spark.driver.memory", "1g") \
+    .config("spark.sql.shuffle.partitions", "4") \
     .getOrCreate()
 ```
 
-### Problema: "Permission Denied"
+### Problema: "Permission denied" ao executar script
 
-**Solução**:
+Solucao:
+
 ```bash
 chmod +x *.py
 ```
 
-### Problema: Docker Build Falha
+Tambem e possivel executar explicitamente com Python:
 
-**Solução**:
 ```bash
-# Limpe recursos não utilizados do Docker
-docker system prune
-
-# Rebuild sem cache
-docker build --no-cache -t pyspark-app:v1.0 .
+python3 spark_sales_analysis.py
 ```
-
-Use `docker system prune -a` apenas se o professor orientar, pois ele remove mais camadas e imagens do cache, deixando builds futuros mais lentos.
 
 ---
 
-## Apêndice B: Comandos Úteis
+## Apendice B: Comandos Uteis
 
-### PySpark Shell Interativo
+### Verificar ambiente
 
 ```bash
-# Inicie o PySpark shell
-pyspark
-
-# Com configurações personalizadas
-pyspark --master local[4] --driver-memory 2g
+python3 --version
+java -version
+python3 -m pip show pyspark
 ```
 
-### Spark Submit
+### Recriar dados
 
 ```bash
-# Submeta uma aplicação
+cd pyspark_app
+python3 data_generator.py
+```
+
+### Executar exemplos
+
+```bash
+cd pyspark_app
+python3 spark_word_count.py
+python3 spark_sales_analysis.py
+```
+
+### Executar com spark-submit
+
+```bash
+cd pyspark_app
 spark-submit \
   --master local[*] \
   --driver-memory 2g \
-  --executor-memory 2g \
   spark_sales_analysis.py
 ```
 
-### Monitoramento
-
-```bash
-# Spark UI (quando executando localmente)
-# Acesse: http://localhost:4040
-```
-
 ---
 
-## Conclusão
+## Conclusao
 
-Parabéns! Você completou o laboratório de PySpark. 
+Ao concluir o laboratorio, voce tera praticado:
 
-**O que você aprendeu**:
-- ✅ Arquitetura e conceitos do Apache Spark
-- ✅ Diferença entre RDDs e DataFrames
-- ✅ Transformações e Ações
-- ✅ Lazy Evaluation
-- ✅ Análise de dados com PySpark
-- ✅ Containerização de aplicações Spark
-- ✅ Comparação com MapReduce
+- Arquitetura e conceitos do Apache Spark
+- Diferenca entre RDDs e DataFrames
+- Transformacoes, acoes e lazy evaluation
+- Leitura e analise de dados com PySpark
+- Agregacoes, ordenacoes, filtros e metricas de negocio
+- Interpretacao de resultados em um caso de e-commerce
+- Comparacao entre Spark e MapReduce
 
-**Próximos passos**:
-- Continue praticando com datasets reais
-- Explore Spark Streaming e MLlib
-- Considere certificações
-- Contribua com projetos open source
-
----
-
+Continue praticando com novas perguntas sobre o dataset e tente implementar suas proprias analises.

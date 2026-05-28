@@ -27,15 +27,6 @@ if ($LASTEXITCODE -eq 0) {
     exit 1
 }
 
-# Verifica Docker
-Write-Host -NoNewline "   Docker: "
-$dockerVersion = docker --version 2>&1
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ $dockerVersion" -ForegroundColor Green
-} else {
-    Write-Host "❌ Não encontrado" -ForegroundColor Red
-}
-
 # Verifica Java
 Write-Host -NoNewline "   Java: "
 $javaVersion = java -version 2>&1
@@ -94,10 +85,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "📚 Próximos passos:" -ForegroundColor Cyan
 Write-Host "   1. Explore o README.md do projeto" -ForegroundColor White
-Write-Host "   2. Execute: python3 spark_word_count.py" -ForegroundColor White
-Write-Host "   3. Execute: python3 spark_sales_analysis.py" -ForegroundColor White
-Write-Host ""
-Write-Host "🐳 Para usar Docker:" -ForegroundColor Cyan
-Write-Host "   docker build -t pyspark-app:v1.0 ." -ForegroundColor White
-Write-Host "   docker compose up sales-analysis" -ForegroundColor White
+Write-Host "   2. Execute: cd pyspark_app" -ForegroundColor White
+Write-Host "   3. Execute: python3 spark_word_count.py" -ForegroundColor White
+Write-Host "   4. Execute: python3 spark_sales_analysis.py" -ForegroundColor White
 Write-Host ""
