@@ -315,7 +315,7 @@ Esse script verifica Python e Java, instala as dependencias Python e gera os dad
 
 Criterio de sucesso: ao final, o terminal deve informar que o setup foi concluido e que os dados de exemplo foram gerados.
 
-**Evidencia 4:** capture uma copia de tela do terminal mostrando o `./init-repo.sh` concluido com sucesso.
+**Evidencia 3:** capture uma copia de tela do terminal mostrando o `./init-repo.sh` concluido com sucesso.
 
 ### 3.3 Verificando o ambiente
 
@@ -328,7 +328,7 @@ python3 -m pip show pyspark
 ls -la pyspark_app/
 ```
 
-**Evidencia 3:** capture uma copia de tela mostrando a estrutura do projeto com `ls -la pyspark_app/`.
+**Evidencia 4:** capture uma copia de tela mostrando a estrutura do projeto com `ls -la pyspark_app/`.
 
 Voce deve encontrar estes arquivos principais:
 
