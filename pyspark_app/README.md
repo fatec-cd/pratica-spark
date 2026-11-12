@@ -10,7 +10,7 @@ Aplicacao de analise de dados usando Apache Spark e PySpark em um caso de vendas
 - Java 11 ou 17, preferencialmente Java 17
 - Dependencias instaladas a partir de `requirements.txt`
 
-Na raiz do repositorio, o comando recomendado e:
+O Codespace executa o setup automaticamente ao ser criado. Se o terminal mostrar `Setup concluído com sucesso!`, pule a instalacao. Se nao, execute o setup uma vez a partir da raiz do repositorio:
 
 ```bash
 ./init-repo.sh
@@ -26,9 +26,13 @@ python3 data_generator.py
 
 # Exemplo basico: Word Count
 python3 spark_word_count.py
+python3 -m unittest test_spark_word_count -v
 
 # Analise completa: Vendas
 python3 spark_sales_analysis.py
+
+# Confere part-files e reconcilia os totais das analises com o dataset
+python3 validate_sales_outputs.py
 ```
 
 ## Estrutura do Projeto
@@ -39,6 +43,8 @@ pyspark_app/
 |-- spark_word_count.py        # Exemplo basico de word count
 |-- spark_stream_example.py    # Exemplo complementar de streaming
 |-- data_generator.py          # Gerador de dados sinteticos
+|-- test_spark_word_count.py   # Testes das regras de tokenizacao
+|-- validate_sales_outputs.py  # Validador das saidas da analise
 |-- requirements.txt           # Dependencias Python
 `-- data/                      # Datasets e resultados
     |-- sales_data.csv         # Dados de vendas gerados
@@ -139,6 +145,14 @@ Os resultados das analises sao salvos em:
 - `data/output/monthly_trends/`
 - `data/output/product_performance/`
 
+O Spark grava cada resultado em uma pasta com arquivos `part-*.csv`. Depois de executar `spark_sales_analysis.py`, valide essas pastas e reconcilie as receitas e contagens com:
+
+```bash
+python3 validate_sales_outputs.py
+```
+
+Uma execucao valida termina com status zero e imprime `OK:`. O validador tambem verifica a analise opcional `revenue_by_region_category/` se essa pasta existir.
+
 ## Exercicios Praticos
 
 1. Identifique padroes de vendas por dia da semana
@@ -185,6 +199,8 @@ python3 -m pip install -r requirements.txt
 python3 data_generator.py
 ```
 
+Confirme que os comandos estao sendo executados a partir de `pyspark_app`; os caminhos `data/...` sao relativos ao diretorio atual.
+
 ### Permissao negada
 
 ```bash
@@ -192,6 +208,17 @@ chmod +x *.py
 ```
 
 Tambem e possivel executar os scripts com `python3 nome_do_script.py`.
+
+### A analise ou o validador falha
+
+Leia a primeira mensagem de erro e o traceback. Os scripts de analise agora retornam um codigo diferente de zero quando ocorre uma falha. Execute a analise a partir de `pyspark_app`, corrija a causa indicada e rode novamente:
+
+```bash
+python3 spark_sales_analysis.py
+python3 validate_sales_outputs.py
+```
+
+Se o validador disser que falta um `part-*.csv`, confira a pasta correspondente em `data/output/` e procure erros de gravacao no terminal antes de tentar novamente.
 
 ## Recursos de Aprendizagem
 

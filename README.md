@@ -304,14 +304,16 @@ Verifique:
 
 ### 3.2 Preparando dependencias e dados
 
-No terminal do Codespaces, execute:
+O arquivo `.devcontainer/devcontainer.json` executa `./init-repo.sh` automaticamente ao criar o Codespace. Primeiro confira o terminal: se aparecer `Setup concluído com sucesso!`, avance para a secao 3.3 sem repetir a instalacao nem a geracao dos dados.
+
+Se o setup automatico nao tiver terminado com sucesso, abra o terminal na raiz do repositorio (a pasta que contem `init-repo.sh`) e execute:
 
 ```bash
 chmod +x init-repo.sh
 ./init-repo.sh
 ```
 
-Esse script verifica Python e Java, instala as dependencias Python e gera os dados iniciais.
+Esse script verifica Python e Java, instala as dependencias Python e gera os dados iniciais. A geracao cria novos valores aleatorios e substitui os CSVs anteriores; repita-a apenas se os arquivos estiverem ausentes ou se quiser recria-los.
 
 Criterio de sucesso: ao final, o terminal deve informar que o setup foi concluido e que os dados de exemplo foram gerados.
 
@@ -319,7 +321,7 @@ Criterio de sucesso: ao final, o terminal deve informar que o setup foi concluid
 
 ### 3.3 Verificando o ambiente
 
-Execute:
+Na raiz do repositorio, execute:
 
 ```bash
 python3 --version
@@ -327,6 +329,8 @@ java -version
 python3 -m pip show pyspark
 ls -la pyspark_app/
 ```
+
+O esperado e Python 3.8 a 3.11, Java 11 ou 17 e PySpark 3.5.x. O Codespace configurado pelo repositorio usa Python 3.11 e Java 17.
 
 **Evidencia 4:** capture uma copia de tela mostrando a estrutura do projeto com `ls -la pyspark_app/`.
 
@@ -336,8 +340,11 @@ Voce deve encontrar estes arquivos principais:
 - `spark_word_count.py`: exemplo introdutorio com texto
 - `spark_sales_analysis.py`: analise completa de vendas
 - `spark_stream_example.py`: exemplo complementar de streaming
+- `validate_sales_outputs.py`: verifica os CSVs gerados e reconcilia totais
 - `requirements.txt`: dependencias Python
 - `data/`: diretorio de datasets e resultados
+
+Os comandos de verificacao desta secao sao executados na raiz do repositorio. Continue nela ate a secao 4.1, que faz a unica mudanca para a pasta da aplicacao; os caminhos `data/...` usados pelos scripts sao relativos ao diretorio atual.
 
 ### Situacoes que podem prejudicar a execucao
 
@@ -368,12 +375,14 @@ Verifique:
 
 ### 4.1 Explorando a estrutura do projeto
 
-Entre no diretorio da aplicacao:
+Saindo da raiz do repositorio, entre na pasta da aplicacao uma unica vez:
 
 ```bash
 cd pyspark_app
 ls -la
 ```
+
+Mantenha esse terminal nessa pasta durante as secoes 4.2 a 4.7. Se abrir outro terminal, confira `pwd`; se ele ja mostrar `pyspark_app`, nao repita `cd pyspark_app`.
 
 Estrutura esperada:
 
@@ -383,6 +392,8 @@ pyspark_app/
 |-- spark_word_count.py        # Exemplo basico
 |-- data_generator.py          # Geracao de dados de teste
 |-- spark_stream_example.py    # Exemplo complementar de streaming
+|-- test_spark_word_count.py   # Testes das regras de tokenizacao
+|-- validate_sales_outputs.py  # Validacao das saidas da analise
 |-- requirements.txt           # Dependencias Python
 `-- data/                      # Datasets e resultados
 ```
@@ -394,6 +405,8 @@ Se voce executou `./init-repo.sh`, os dados ja foram criados. Para recriar os ar
 ```bash
 python3 data_generator.py
 ```
+
+O gerador escreve 1.000 transacoes em `data/sales_data.csv`, alem de `data/products.csv` e `data/input.txt`. Datas e valores sao sinteticos e podem mudar a cada geracao; compare contagens e totais internamente consistentes, nao valores monetarios fixos entre execucoes.
 
 Visualize as primeiras linhas:
 
@@ -418,12 +431,14 @@ Com o arquivo aberto no editor, localize:
 - A funcao que cria a SparkSession
 - A leitura de `data/input.txt`
 - As tres abordagens de Word Count: RDD, DataFrame e SQL
+- A view SQL que recebe os tokens ja normalizados com a mesma regra das outras abordagens
 - A chamada que exibe o plano de execucao
 
 Depois, execute o exemplo no terminal:
 
 ```bash
 python3 spark_word_count.py
+python3 -m unittest test_spark_word_count -v
 ```
 
 O script demonstra:
@@ -435,7 +450,7 @@ O script demonstra:
 5. Execucao de acoes
 6. Visualizacao do plano de execucao
 
-Criterio de sucesso: o terminal deve exibir rankings de palavras e o plano de execucao do Spark.
+Criterio de sucesso: o terminal deve exibir um ranking em cada abordagem, a mensagem `As três abordagens produziram o mesmo top 20` e os planos de execucao; o comando de teste deve terminar com `OK`. A verificacao compara apenas as palavras e contagens dos 20 primeiros resultados, nao todas as palavras distintas do arquivo. Empates sao apresentados em ordem alfabetica. Os tempos comecam antes da leitura/preparacao de cada abordagem e terminam quando a mesma acao materializa o top 20; sao aproximados e nao devem ser tratados como benchmark.
 
 **Evidencia 6:** capture uma copia de tela mostrando os resultados do Word Count.
 
@@ -444,6 +459,12 @@ Criterio de sucesso: o terminal deve exibir rankings de palavras e o plano de ex
 ### 4.4 Analise de vendas: leitura e exploracao
 
 Abra `spark_sales_analysis.py` no editor do Codespaces. Use o Explorer lateral ou `Ctrl+P` para localizar o arquivo rapidamente.
+
+Antes de acompanhar a leitura do CSV, observe tres termos:
+
+- `inferSchema=True` pede ao Spark que examine os valores e infira tipos para as colunas, como inteiro, decimal e texto. E pratico para explorar este CSV pequeno; em dados de producao, um schema declarado evita inferencias incorretas e a leitura extra necessaria para inferir tipos.
+- `groupBy(...)` separa as linhas em grupos pelas colunas indicadas; `.agg(...)` calcula uma ou mais metricas em cada grupo, como soma de receita e contagem de transacoes.
+- `write.mode("overwrite")` grava o resultado e substitui a pasta de saida se ela ja existir. Por isso, repetir a analise atualiza os resultados anteriores; nao use esse modo se precisar preservar uma execucao previa.
 
 Observe no codigo:
 
@@ -520,13 +541,17 @@ Observe a saida:
 
 **Evidencia 12:** capture a tela da secao de metricas de clientes ou tendencias temporais.
 
-Depois que a analise terminar, confirme os diretorios de saida:
+Depois que a analise terminar, valide os diretorios e os valores de saida:
 
 ```bash
-ls -la data/output/
+python3 validate_sales_outputs.py
 ```
 
-**Evidencia 13:** capture uma copia de tela mostrando os diretorios criados em `data/output/`.
+O validador verifica o dataset de origem, a presenca de part-files CSV nas seis pastas Spark e a conciliacao de contagens e receitas por categoria, regiao, mes, cliente e produto com o total de vendas. Valores de receita gravados com duas casas sao comparados com tolerancia de arredondamento.
+
+Criterio de sucesso: o comando termina com codigo zero e imprime uma linha iniciada por `OK:`. Se falhar, leia a mensagem `ERRO:` e volte ao passo que gerou o arquivo ou diretorio citado; corrija a causa e execute novamente a analise completa antes de validar outra vez.
+
+**Evidencia 13:** capture uma copia de tela mostrando o resultado `OK:` do validador.
 
 ### 4.7 Desafio opcional desejavel: criando uma nova analise
 
@@ -547,6 +572,26 @@ Para realizar o desafio:
 5. Ordene por `region` e por maior receita dentro de cada regiao.
 6. Salve o resultado em `data/output/revenue_by_region_category`.
 7. Chame a nova funcao dentro de `main()`, depois da chamada de `analysis_sales_by_region(df)`.
+
+Antes de consultar o modelo, tente preencher os tres calculos e completar a funcao. O exemplo abaixo mostra como organizar a transformacao, a acao e a gravacao; os campos `TODO` sao parte do exercicio:
+
+```python
+def analysis_revenue_by_region_category(df):
+    print("\nANALISE EXTRA: RECEITA POR REGIAO E CATEGORIA")
+
+    result = df.groupBy("region", "category").agg(
+        sum("revenue").alias("total_revenue"),
+        # TODO: some quantity e use o alias total_quantity
+        # TODO: conte as linhas com count("*") e use o alias num_transactions
+    ).orderBy("region", desc("total_revenue"))
+
+    result.show(truncate=False)
+    result.write.mode("overwrite").csv(
+        "data/output/revenue_by_region_category", header=True
+    )
+```
+
+Na etapa 7, chame a funcao na sequencia de analises de `main()`. O validador da secao 4.6 tambem verifica essa pasta e os cinco nomes de coluna quando ela existe; rode-o novamente para conferir a extensao.
 
 **Evidencia opcional 14:** capture uma copia de tela do editor mostrando a nova funcao criada no codigo.
 
@@ -571,6 +616,7 @@ Verifique:
 - [ ] Word Count executou com sucesso
 - [ ] Analise de vendas executou completamente
 - [ ] Resultados foram gravados em `data/output/`
+- [ ] `python3 validate_sales_outputs.py` terminou com status zero e mensagem `OK:`
 - [ ] Voce identificou transformacoes e acoes nos scripts
 - [ ] Voce consegue interpretar os resultados de negocio
 - [ ] Opcional: voce criou e executou a analise extra por regiao e categoria
@@ -599,7 +645,7 @@ Use a lista abaixo como checklist final. As copias de tela devem ter sido captur
 10. **Analise de vendas: top produtos**: screenshot mostrando os produtos mais vendidos
 11. **Analise de vendas: vendas por regiao**: screenshot mostrando a distribuicao de vendas por regiao
 12. **Analise de vendas: metricas de clientes ou tendencias temporais**: screenshot mostrando uma dessas secoes da analise completa
-13. **Resultados gerados**: screenshot mostrando os diretorios criados em `data/output/`
+13. **Validacao das saidas**: screenshot mostrando o resultado `OK:` de `python3 validate_sales_outputs.py`
 
 ### 5.3 Evidencias opcionais desejaveis
 
@@ -763,6 +809,8 @@ cd pyspark_app
 python3 data_generator.py
 ```
 
+Confirme que o terminal esta dentro de `pyspark_app` antes de gerar os dados ou executar os scripts. Se o caminho estiver correto e o arquivo existir, confira o nome e as permissoes com `ls -la data/`.
+
 ### Problema: comando executado no diretorio errado
 
 Se o script nao encontrar arquivos dentro de `data/`, confirme o diretorio atual:
@@ -777,6 +825,29 @@ Para executar os scripts, entre em:
 ```bash
 cd pyspark_app
 ```
+
+Execute `./init-repo.sh` apenas a partir da raiz; os scripts da aplicacao e o validador devem ser executados dentro de `pyspark_app`.
+
+### Problema: analise terminou com erro ou nao criou todas as saidas
+
+Leia a primeira mensagem `ERRO:` do terminal e o traceback completo. O script retorna status diferente de zero em caso de falha; confira o status com:
+
+```bash
+python3 spark_sales_analysis.py
+echo $?
+```
+
+Um resultado `0` significa sucesso; qualquer valor diferente de `0` significa falha. Corrija primeiro o arquivo ou diretorio indicado, confirme as versoes do Python e Java e execute novamente a analise. Depois rode `python3 validate_sales_outputs.py`; ele aponta qual pasta, coluna ou total ainda nao confere.
+
+### Problema: o validador informa que falta um `part-*.csv`
+
+O Spark salva cada resultado como uma pasta com um ou mais arquivos `part-*.csv`, nao como um unico arquivo com o nome da analise. Execute a analise completa a partir de `pyspark_app`, aguarde a mensagem final de sucesso e confira a pasta apontada com:
+
+```bash
+ls -la data/output/NOME_DA_ANALISE/
+```
+
+Se a pasta existe mas nao contem `part-*.csv`, consulte o erro anterior no terminal; uma pasta vazia nao comprova que a gravacao terminou.
 
 ### Problema: "Out of Memory"
 

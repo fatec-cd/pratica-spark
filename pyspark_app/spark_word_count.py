@@ -4,10 +4,20 @@ Word Count com PySpark - Exemplo Básico
 Demonstra conceitos fundamentais do Spark
 """
 
-from pyspark.sql.functions import explode, split, lower, col, desc
+from pyspark.sql.functions import explode, split, lower, col, desc, regexp_replace
+from pyspark.errors import AnalysisException
+from py4j.protocol import Py4JJavaError
 import time
+import re
+from pathlib import Path
 
 from spark_environment import local_spark_builder
+
+
+def normalize_words(text):
+    """Split on punctuation and whitespace while preserving accented letters."""
+    return re.findall(r"[^\W_]+", text.lower(), flags=re.UNICODE)
+
 
 def create_spark_session():
     """Cria e configura SparkSession"""
@@ -26,23 +36,22 @@ def word_count_rdd_approach(spark, input_file):
     print("📊 WORD COUNT - ABORDAGEM RDD")
     print("="*60)
     
-    start_time = time.time()
-    
+    start_time = time.perf_counter()
+
     # Lê arquivo como RDD
     text_rdd = spark.sparkContext.textFile(input_file)
     
     # Transformações (lazy)
     words_rdd = text_rdd \
-        .flatMap(lambda line: line.lower().split()) \
+        .flatMap(normalize_words) \
         .filter(lambda word: len(word) > 3) \
         .map(lambda word: (word, 1)) \
         .reduceByKey(lambda a, b: a + b) \
-        .sortBy(lambda x: x[1], ascending=False)
+        .sortBy(lambda x: (-x[1], x[0]))
     
-    # Ação (trigger execution)
+    # A ação materializa o mesmo top 20 medido nas outras abordagens.
     results = words_rdd.take(20)
-    
-    elapsed = time.time() - start_time
+    elapsed = time.perf_counter() - start_time
     
     # Exibe resultados
     print("\n🏆 Top 20 palavras mais frequentes:")
@@ -52,7 +61,7 @@ def word_count_rdd_approach(spark, input_file):
         print(f"{word:<20} {count:>10}")
     
     print(f"\n⏱️  Tempo de execução: {elapsed:.3f} segundos")
-    print(f"📈 Total de palavras únicas: {words_rdd.count()}")
+    return dict(results)
 
 def word_count_dataframe_approach(spark, input_file):
     """
@@ -63,31 +72,36 @@ def word_count_dataframe_approach(spark, input_file):
     print("📊 WORD COUNT - ABORDAGEM DATAFRAME")
     print("="*60)
     
-    start_time = time.time()
-    
+    start_time = time.perf_counter()
+
     # Lê arquivo como DataFrame
     df = spark.read.text(input_file)
     
     # Transformações usando DataFrame API
     words_df = df \
-        .select(explode(split(lower(col("value")), r'\s+')).alias("word")) \
-        .filter(col("word").rlike(r'^[a-z]{4,}$')) \
+        .select(
+            explode(
+                split(
+                    regexp_replace(lower(col("value")), r"[^\p{L}\p{N}]+", " "),
+                    r"\s+",
+                )
+            ).alias("word")
+        ) \
+        .filter(col("word").rlike(r"^[\p{L}\p{N}]{4,}$")) \
         .groupBy("word") \
         .count() \
-        .orderBy(desc("count"))
+        .orderBy(desc("count"), col("word"))
     
-    # Ação - mostra top 20
-    results = words_df.limit(20)
-    
-    elapsed = time.time() - start_time
+    # collect() executa a mesma ação top 20 que take() na abordagem RDD.
+    results = words_df.limit(20).collect()
+    elapsed = time.perf_counter() - start_time
     
     print("\n🏆 Top 20 palavras mais frequentes:")
-    results.show(truncate=False)
+    for row in results:
+        print(f"{row['word']:<20} {row['count']:>10}")
     
     print(f"\n⏱️  Tempo de execução: {elapsed:.3f} segundos")
-    print(f"📈 Total de palavras únicas: {words_df.count()}")
-    
-    return words_df
+    return {row["word"]: row["count"] for row in results}
 
 def word_count_sql_approach(spark, input_file):
     """
@@ -98,33 +112,40 @@ def word_count_sql_approach(spark, input_file):
     print("📊 WORD COUNT - ABORDAGEM SQL")
     print("="*60)
     
-    start_time = time.time()
-    
-    # Lê arquivo e cria view temporária
+    start_time = time.perf_counter()
+
+    # Tokeniza com a mesma normalização da API DataFrame e expõe os termos ao SQL.
     df = spark.read.text(input_file)
-    df.createOrReplaceTempView("lines")
-    
-    # Query SQL
+    words = df \
+        .select(
+            explode(
+                split(
+                    regexp_replace(lower(col("value")), r"[^\p{L}\p{N}]+", " "),
+                    r"\s+",
+                )
+            ).alias("word")
+        ) \
+        .filter(col("word").rlike(r"^[\p{L}\p{N}]{4,}$"))
+    words.createOrReplaceTempView("words")
+
+    # Query SQL sobre os mesmos tokens usados na abordagem DataFrame.
     sql_query = """
         SELECT word, COUNT(*) as count
-        FROM (
-            SELECT explode(split(lower(value), '\\s+')) as word
-            FROM lines
-        )
-        WHERE length(word) > 3 AND word RLIKE '^[a-z]+$'
+        FROM words
         GROUP BY word
-        ORDER BY count DESC
-        LIMIT 20
+        ORDER BY count DESC, word ASC
     """
     
-    results = spark.sql(sql_query)
-    
-    elapsed = time.time() - start_time
+    words_df = spark.sql(sql_query)
+    results = words_df.limit(20).collect()
+    elapsed = time.perf_counter() - start_time
     
     print("\n🏆 Top 20 palavras mais frequentes:")
-    results.show(truncate=False)
+    for row in results:
+        print(f"{row['word']:<20} {row['count']:>10}")
     
     print(f"\n⏱️  Tempo de execução: {elapsed:.3f} segundos")
+    return {row["word"]: row["count"] for row in results}
 
 def analyze_execution_plan(spark, input_file):
     """
@@ -138,11 +159,18 @@ def analyze_execution_plan(spark, input_file):
     df = spark.read.text(input_file)
     
     words_df = df \
-        .select(explode(split(lower(col("value")), r'\s+')).alias("word")) \
-        .filter(col("word").rlike(r'^[a-z]{4,}$')) \
+        .select(
+            explode(
+                split(
+                    regexp_replace(lower(col("value")), r"[^\p{L}\p{N}]+", " "),
+                    r"\s+",
+                )
+            ).alias("word")
+        ) \
+        .filter(col("word").rlike(r"^[\p{L}\p{N}]{4,}$")) \
         .groupBy("word") \
         .count() \
-        .orderBy(desc("count"))
+        .orderBy(desc("count"), col("word"))
     
     print("\n📋 Logical Plan (antes das otimizações):")
     print("-" * 60)
@@ -164,6 +192,9 @@ def main():
     spark = None
     
     try:
+        if not Path(input_file).is_file():
+            raise FileNotFoundError(input_file)
+
         # Cria SparkSession
         spark = create_spark_session()
         
@@ -175,9 +206,14 @@ def main():
         print(f"💻 Cores disponíveis: {spark.sparkContext.defaultParallelism}")
         
         # Executa diferentes abordagens
-        word_count_rdd_approach(spark, input_file)
-        word_count_dataframe_approach(spark, input_file)
-        word_count_sql_approach(spark, input_file)
+        rdd_top_20 = word_count_rdd_approach(spark, input_file)
+        dataframe_top_20 = word_count_dataframe_approach(spark, input_file)
+        sql_top_20 = word_count_sql_approach(spark, input_file)
+        if rdd_top_20 != dataframe_top_20 or rdd_top_20 != sql_top_20:
+            raise RuntimeError(
+                "Os resultados do top 20 diferem entre RDD, DataFrame e SQL."
+            )
+        print("\n✅ As três abordagens produziram o mesmo top 20.")
         analyze_execution_plan(spark, input_file)
         
         print("\n" + "="*60)
@@ -194,11 +230,25 @@ def main():
         
     except FileNotFoundError:
         print(f"\n❌ Erro: Arquivo '{input_file}' não encontrado!")
-        print("💡 Execute primeiro: python3 data_generator.py")
+        print("💡 Entre em pyspark_app e execute: python3 data_generator.py")
+        return 1
     except RuntimeError as e:
         print(f"\n❌ Ambiente incompatível: {e}")
+        return 1
+    except AnalysisException as e:
+        print(f"\n❌ Spark não encontrou o arquivo de entrada ou caminho: {e}")
+        print("💡 Execute o setup na raiz e rode o script dentro de pyspark_app.")
+        return 1
+    except Py4JJavaError as e:
+        if "PATH_NOT_FOUND" in str(e):
+            print(f"\n❌ Spark não encontrou o arquivo de entrada: {e}")
+            print("💡 Execute o setup na raiz e rode o script dentro de pyspark_app.")
+        else:
+            print(f"\n❌ Erro do Spark durante a execução: {e}")
+        return 1
     except Exception as e:
         print(f"\n❌ Erro durante execução: {e}")
+        return 1
     finally:
         # Encerra SparkSession
         if spark:
@@ -206,4 +256,4 @@ def main():
             print("\n🔚 SparkSession encerrada.")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

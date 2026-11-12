@@ -9,7 +9,9 @@ from pyspark.sql.functions import (
     year, month, dayofweek, date_format, to_date, expr
 )
 from pyspark.sql.window import Window
+from pyspark.errors import AnalysisException
 import time
+from pathlib import Path
 
 from spark_environment import local_spark_builder
 
@@ -352,9 +354,13 @@ def main():
     print("=" * 60)
     
     start_time = time.time()
+    input_file = "data/sales_data.csv"
     spark = None
     
     try:
+        if not Path(input_file).is_file():
+            raise FileNotFoundError(input_file)
+
         # Cria SparkSession
         spark = create_spark_session()
         spark.sparkContext.setLogLevel("WARN")
@@ -364,9 +370,6 @@ def main():
         print(f"   • Cores: {spark.sparkContext.defaultParallelism}")
         print(f"   • Memória Driver: 2GB")
         print(f"   • Memória Executor: 2GB")
-        
-        # Arquivo de entrada
-        input_file = "data/sales_data.csv"
         
         # Carrega dados
         df = load_data(spark, input_file)
@@ -408,13 +411,20 @@ def main():
         
     except FileNotFoundError:
         print(f"\n❌ Erro: Arquivo não encontrado!")
-        print("💡 Execute primeiro: python3 data_generator.py")
+        print("💡 Entre em pyspark_app e execute: python3 data_generator.py")
+        return 1
     except RuntimeError as e:
         print(f"\n❌ Ambiente incompatível: {e}")
+        return 1
+    except AnalysisException as e:
+        print(f"\n❌ Spark não encontrou o arquivo ou diretório esperado: {e}")
+        print("💡 Confira o diretório atual e gere os dados com python3 data_generator.py.")
+        return 1
     except Exception as e:
         print(f"\n❌ Erro durante análise: {e}")
         import traceback
         traceback.print_exc()
+        return 1
     finally:
         # Encerra SparkSession
         if spark:
@@ -422,4 +432,4 @@ def main():
             print("\n🔚 SparkSession encerrada.")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
