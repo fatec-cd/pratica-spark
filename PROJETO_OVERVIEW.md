@@ -30,6 +30,7 @@ pratica-spark/
     |-- spark_word_count.py      # Exemplo basico com texto
     |-- spark_sales_analysis.py  # Analise completa de vendas
     |-- spark_stream_example.py  # Exemplo complementar de streaming
+    |-- validate_sales_outputs.py # Validacao das saidas da analise
     `-- data/                    # Datasets e resultados
 ```
 
@@ -41,6 +42,8 @@ Faca fork do repositorio, abra a aba **Code**, selecione **Codespaces** e crie u
 
 ### 2. Execute o setup
 
+O Codespace executa o setup automaticamente ao ser criado. Se o terminal mostrar `Setup concluído com sucesso!`, pule este passo. Caso contrario, abra o terminal na raiz do repositorio:
+
 ```bash
 chmod +x init-repo.sh
 ./init-repo.sh
@@ -48,10 +51,14 @@ chmod +x init-repo.sh
 
 ### 3. Execute os exemplos
 
+Estes comandos devem ser executados dentro de `pyspark_app`. Se os arquivos de dados ainda nao existirem:
+
 ```bash
 cd pyspark_app
+python3 data_generator.py
 python3 spark_word_count.py
 python3 spark_sales_analysis.py
+python3 validate_sales_outputs.py
 ```
 
 ## Conteudo do Roteiro
